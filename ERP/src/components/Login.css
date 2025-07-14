@@ -1,0 +1,8 @@
+.sign-in-btn {
+    background-color: #ff6600;
+    color: #fff;
+}
+
+.remember-me-check:checked {
+    background-color: #ff6600;
+}
