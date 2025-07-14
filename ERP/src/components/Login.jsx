@@ -18,11 +18,6 @@ const Login = () => {
         className="w-100"
         style={{ maxWidth: 400 }}
       >
-        <input
-          type="hidden"
-          name="_token"
-          value="nwbVZ8u9IaJJOR3P8MJLcQBEI50TtJdPnqUbLyct"
-        />
         <div className="mb-3">
           <label htmlFor="username" className="form-label">
             Username
