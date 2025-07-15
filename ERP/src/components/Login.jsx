@@ -1,7 +1,28 @@
 import React from "react";
 import "./Login.css";
+import { useState } from "react";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const saved = JSON.parse(localStorage.getItem("testUser") || "{}");
+    if (username === saved.userName && password === saved.password) {
+      localStorage.setItem("isAuthenticated", "true");
+      login();
+      navigate("/home", { replace: true });
+    } else {
+      setError("Invalid username or password");
+    }
+  };
   return (
     <div className="right-panel flex-fill bg-white d-flex flex-column align-items-center justify-content-center p-5">
       <div className="logo mb-3">
@@ -12,17 +33,7 @@ const Login = () => {
           style={{ height: 80 }}
         />
       </div>
-      <form
-        method="POST"
-        action="https://demo.algosofttech.com/loginprocess"
-        className="w-100"
-        style={{ maxWidth: 400 }}
-      >
-        <input
-          type="hidden"
-          name="_token"
-          value="nwbVZ8u9IaJJOR3P8MJLcQBEI50TtJdPnqUbLyct"
-        />
+      <form onSubmit={handleSubmit} className="w-100" style={{ maxWidth: 400 }}>
         <div className="mb-3">
           <label htmlFor="username" className="form-label">
             Username
@@ -33,6 +44,8 @@ const Login = () => {
             name="username"
             id="username"
             placeholder="Enter Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
           <span className="text-danger"></span>
         </div>
@@ -47,6 +60,8 @@ const Login = () => {
               id="userpassword"
               name="userpassword"
               placeholder="Enter Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
             <span className="input-group-text bg-transparent">
               <i className="bx bx-hide"></i>
@@ -67,7 +82,11 @@ const Login = () => {
           </label>
         </div>
         <div className="d-grid pt-3">
-          <button type="submit" className="sign-in-btn btn w-100">
+          <button
+            type="submit"
+            className="btn w-100"
+            style={{ backgroundColor: "#ff6600", color: "#fff" }}
+          >
             Sign in
           </button>
         </div>
