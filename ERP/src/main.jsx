@@ -13,10 +13,10 @@ import { seedTestUser } from "./utils/seedUser.js";
 seedTestUser();
 
 const router = createBrowserRouter([
-  {
-    path: "*",
-    element: <UserLogin />,
-  },
+  // {
+  //   path: "*",
+  //   element: <UserLogin />,
+  // },
   {
     element: <UserLogin />,
     path: "/",
