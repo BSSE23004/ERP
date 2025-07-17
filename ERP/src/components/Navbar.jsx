@@ -32,7 +32,6 @@ export default function AppNavbar({ onSearch }) {
   return (
     <Navbar bg="light" expand="lg" className="px-3" fixed="top">
       <Container fluid>
-        {/* Optional: Add Brand or Logo on the left here */}
         <img
           src="https://demo.algosofttech.com/admin/assets/img/logo.png"
           alt="Algo ERP"

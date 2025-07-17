@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import menuItemsData from "../utils/menuItems.json";
 
-export default function Sidebar({ menuItems }) {
+export default function Sidebar() {
+  const [menuItems, setMenuItems] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    setMenuItems(menuItemsData);
+  }, []);
 
   const handleSelect = (path) => navigate(path);
 
@@ -13,7 +19,7 @@ export default function Sidebar({ menuItems }) {
       style={{ width: "250px", top: "4rem" }}
     >
       <div className="accordion" id="sidebarAccordion">
-        {menuItems.map((item, i) => (
+        {menuItems.map((item) => (
           <div className="accordion-item" key={item.id}>
             {/* Header */}
             <h2 className="accordion-header" id={`heading-${item.id}`}>
