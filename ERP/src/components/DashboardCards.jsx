@@ -32,8 +32,8 @@ function DashboardCards() {
             borderRadius: 12,
             boxShadow:
               hovered === idx
-                ? "0 8px 24px 0 rgba(60,72,88,.18), 0 1.5px 6px 0 rgba(60,72,88,.08)"
-                : "0 1px 6px 0 rgba(60,72,88,.08)",
+                ? "0 12px 32px 0 rgba(60,72,88,0.35), 0 2px 8px 0 rgba(60,72,88,0.18)"
+                : "0 2px 10px 0 rgba(60,72,88,0.18)",
             display: "flex",
             alignItems: "center",
             padding: "1.5rem 2rem",

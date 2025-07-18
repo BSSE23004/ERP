@@ -7,19 +7,17 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js"; // includes Popper
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import UserLogin from "./pages/UserLogin.jsx";
 import Home from "./pages/Home.jsx";
+import AddAcademicSubject from "./pages/AddAcademicSubject.jsx";
+import AcademicSubject from "./pages/AcademicSubject.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { seedTestUser } from "./utils/seedUser.js";
 seedTestUser();
 
 const router = createBrowserRouter([
-  // {
-  //   path: "*",
-  //   element: <UserLogin />,
-  // },
   {
-    element: <UserLogin />,
     path: "/",
+    element: <UserLogin />,
   },
   {
     path: "/home",
@@ -27,7 +25,27 @@ const router = createBrowserRouter([
       <ProtectedRoute>
         <Home />
       </ProtectedRoute>
-    ), //Protected Route is doing the Authentication
+    ),
+  },
+  {
+    path: "/academic-subject",
+    element: (
+      <ProtectedRoute>
+        <AcademicSubject />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addacademicsubject",
+    element: (
+      <ProtectedRoute>
+        <AddAcademicSubject />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "*",
+    element: <UserLogin />,
   },
 ]);
 
