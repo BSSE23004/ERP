@@ -6,11 +6,56 @@ export default function AcademicSubjectTable({
   onEdit,
   onDelete,
 }) {
+  // Sorting state
+  const [sortBy, setSortBy] = useState("sr"); // "sr", "code", "name", "status"
+  const [sortOrder, setSortOrder] = useState("asc"); // "asc" or "desc"
+
+  // Keep a copy of original order for Sr#
+  const [originalSubjects, setOriginalSubjects] = useState(subjects);
+  useEffect(() => {
+    setOriginalSubjects(subjects);
+  }, [subjects]);
   const [page, setPage] = useState(1);
   const totalPages = Math.ceil(subjects.length / showCount) || 1;
   const startIdx = (page - 1) * showCount;
   const endIdx = startIdx + showCount;
-  const pageSubjects = subjects.slice(startIdx, endIdx);
+
+  // Sorting logic
+  let sortedSubjects = [...subjects];
+  if (sortBy === "code") {
+    sortedSubjects.sort((a, b) =>
+      sortOrder === "asc"
+        ? a.code.localeCompare(b.code)
+        : b.code.localeCompare(a.code)
+    );
+  } else if (sortBy === "name") {
+    sortedSubjects.sort((a, b) =>
+      sortOrder === "asc"
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name)
+    );
+  } else if (sortBy === "status") {
+    sortedSubjects.sort((a, b) =>
+      sortOrder === "asc"
+        ? a.status.localeCompare(b.status)
+        : b.status.localeCompare(a.status)
+    );
+  } else {
+    // Sr# (original order)
+    sortedSubjects = [...originalSubjects];
+  }
+  const pageSubjects = sortedSubjects.slice(startIdx, endIdx);
+
+  // Sorting handler
+  const handleSort = (col) => {
+    if (sortBy === col) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(col);
+      setSortOrder("asc");
+    }
+    setPage(1);
+  };
 
   const handlePrev = () => setPage((p) => Math.max(1, p - 1));
   const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
@@ -25,11 +70,28 @@ export default function AcademicSubjectTable({
       <table className="table table-hover align-middle mb-0">
         <thead className="table-light">
           <tr>
-            <th>Sr #</th>
-            <th>Code</th>
-            <th>Name</th>
+            <th style={{ cursor: "pointer" }} onClick={() => handleSort("sr")}>
+              Sr# {sortBy === "sr" && (sortOrder === "asc" ? "▲" : "▼")}
+            </th>
+            <th
+              style={{ cursor: "pointer" }}
+              onClick={() => handleSort("code")}
+            >
+              Code {sortBy === "code" && (sortOrder === "asc" ? "▲" : "▼")}
+            </th>
+            <th
+              style={{ cursor: "pointer" }}
+              onClick={() => handleSort("name")}
+            >
+              Name {sortBy === "name" && (sortOrder === "asc" ? "▲" : "▼")}
+            </th>
             <th>Description</th>
-            <th>Status</th>
+            <th
+              style={{ cursor: "pointer" }}
+              onClick={() => handleSort("status")}
+            >
+              Status {sortBy === "status" && (sortOrder === "asc" ? "▲" : "▼")}
+            </th>
             <th>Action</th>
           </tr>
         </thead>

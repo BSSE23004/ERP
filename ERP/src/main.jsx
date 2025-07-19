@@ -44,6 +44,14 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/editacademicsubject/:id",
+    element: (
+      <ProtectedRoute>
+        <AddAcademicSubject />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "*",
     element: <UserLogin />,
   },

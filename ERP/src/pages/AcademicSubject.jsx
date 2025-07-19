@@ -1,5 +1,5 @@
 import subjectsData from "../utils/subjects.json";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import AcademicSubjectHeader from "../components/AcademicSubjectHeader";
 import { useNavigate } from "react-router-dom";
 import AcademicSubjectControls from "../components/AcademicSubjectControls";
@@ -17,7 +17,6 @@ function AcademicSubject() {
   const [subjects, setSubjects] = useState(initialSubjects);
   const [showModal, setShowModal] = useState(false);
   const [subjectToDelete, setSubjectToDelete] = useState(null);
-  const modalRef = useRef();
   const [search, setSearch] = useState("");
   const [showCount, setShowCount] = useState(10);
 
@@ -36,7 +35,9 @@ function AcademicSubject() {
   const handleAdd = () => {
     navigate("/addacademicsubject");
   };
-  const handleEdit = (subject) => {};
+  const handleEdit = (subject) => {
+    navigate(`/editacademicsubject/${subject.code}`);
+  };
   const handleDelete = (subject) => {
     setSubjectToDelete(subject);
     setShowModal(true);
@@ -73,6 +74,7 @@ function AcademicSubject() {
               setShowCount={setShowCount}
               search={search}
               setSearch={setSearch}
+              subjects={filtered}
             />
             <AcademicSubjectTable
               subjects={filtered}

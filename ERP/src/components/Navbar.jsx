@@ -32,11 +32,13 @@ export default function AppNavbar({ onSearch }) {
   return (
     <Navbar bg="light" expand="lg" className="px-3" fixed="top">
       <Container fluid>
-        <img
-          src="https://demo.algosofttech.com/admin/assets/img/logo.png"
-          alt="Algo ERP"
-          style={{ height: "2rem" }}
-        />
+        <Link to="/home">
+          <img
+            src="https://demo.algosofttech.com/admin/assets/img/logo.png"
+            alt="Algo ERP"
+            style={{ height: "2rem" }}
+          />
+        </Link>
 
         {/* Right aligned items */}
         <div className="d-flex ms-auto align-items-center gap-3">

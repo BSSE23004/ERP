@@ -8,7 +8,8 @@ export default function AcademicSubjectHeader({ onAdd }) {
         <div className="text-secondary small">Manage Your Academic Subject</div>
       </div>
       <button
-        className="btn btn-warning text-white fw-semibold px-4 py-2 fs-6"
+        className="btn  text-white fw-semibold px-4 py-2 fs-6"
+        style={{ backgroundColor: "#ff6600" }}
         onClick={onAdd}
       >
         + Add New Academic Subject

@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import subjectsData from "../utils/subjects.json";
 import Sidebar from "../components/Sidebar";
 import AppNavbar from "../components/Navbar";
 
 export default function AddAcademicSubject() {
   const navigate = useNavigate();
+  const { id } = useParams();
   const LOCAL_KEY = "academic_subjects";
   // Get current subjects from localStorage or JSON
   const storedSubjects = localStorage.getItem(LOCAL_KEY);
@@ -13,7 +14,10 @@ export default function AddAcademicSubject() {
     ? JSON.parse(storedSubjects)
     : subjectsData;
 
-  // Generate next code
+  // If editing, find the subject by code (id)
+  const editingSubject = id ? initialSubjects.find((s) => s.code === id) : null;
+
+  // Generate next code for new subject
   const getNextCode = () => {
     if (!initialSubjects.length) return "AS-0000001";
     const last = initialSubjects[initialSubjects.length - 1].code;
@@ -21,11 +25,27 @@ export default function AddAcademicSubject() {
     return `AS-${num.toString().padStart(7, "0")}`;
   };
 
-  const [code, setCode] = useState(getNextCode());
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState(true);
+  const [code, setCode] = useState(
+    editingSubject ? editingSubject.code : getNextCode()
+  );
+  const [name, setName] = useState(editingSubject ? editingSubject.name : "");
+  const [description, setDescription] = useState(
+    editingSubject ? editingSubject.description : ""
+  );
+  const [status, setStatus] = useState(
+    editingSubject ? editingSubject.status === "Active" : true
+  );
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (editingSubject) {
+      setCode(editingSubject.code);
+      setName(editingSubject.name);
+      setDescription(editingSubject.description);
+      setStatus(editingSubject.status === "Active");
+    }
+    // eslint-disable-next-line
+  }, [id]);
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -33,14 +53,22 @@ export default function AddAcademicSubject() {
       setError("Name is required");
       return;
     }
-    // Save new subject
     const newSubject = {
       code,
       name: name.trim(),
       description: description.trim(),
       status: status ? "Active" : "Inactive",
     };
-    const updated = [...initialSubjects, newSubject];
+    let updated;
+    if (editingSubject) {
+      // Update existing
+      updated = initialSubjects.map((s) =>
+        s.code === editingSubject.code ? newSubject : s
+      );
+    } else {
+      // Add new
+      updated = [...initialSubjects, newSubject];
+    }
     localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
     navigate("/academic-subject");
   };
@@ -55,7 +83,11 @@ export default function AddAcademicSubject() {
         <AppNavbar />
         <div style={{ flex: 1, padding: "2rem 2rem 0 2rem", marginTop: 50 }}>
           <div className="bg-white rounded shadow-sm p-4">
-            <h3 className="mb-4">Create New Academic Subject</h3>
+            <h3 className="mb-4">
+              {editingSubject
+                ? "Edit Academic Subject"
+                : "Create New Academic Subject"}
+            </h3>
             <form onSubmit={handleSave}>
               <div className="row mb-3">
                 <div className="col-md-6 mb-3 mb-md-0">
@@ -102,9 +134,10 @@ export default function AddAcademicSubject() {
               <div className="d-flex gap-2">
                 <button
                   type="submit"
-                  className="btn btn-warning text-white px-4"
+                  className="btn  text-white px-4"
+                  style={{ backgroundColor: "#ff6600" }}
                 >
-                  Save
+                  {editingSubject ? "Update" : "Save"}
                 </button>
                 <button
                   type="button"
