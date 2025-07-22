@@ -1,50 +1,45 @@
 import React, { useState, useEffect } from "react";
 
-export default function AcademicSubjectTable({
-  subjects,
-  showCount,
-  onEdit,
-  onDelete,
-}) {
+export default function DataTable({ data, showCount, onEdit, onDelete }) {
   // Sorting state
   const [sortBy, setSortBy] = useState("sr"); // "sr", "code", "name", "status"
   const [sortOrder, setSortOrder] = useState("asc"); // "asc" or "desc"
 
   // Keep a copy of original order for Sr#
-  const [originalSubjects, setOriginalSubjects] = useState(subjects);
+  const [originalData, setOriginalData] = useState(data);
   useEffect(() => {
-    setOriginalSubjects(subjects);
-  }, [subjects]);
+    setOriginalData(data);
+  }, [data]);
   const [page, setPage] = useState(1);
-  const totalPages = Math.ceil(subjects.length / showCount) || 1;
+  const totalPages = Math.ceil(data.length / showCount) || 1;
   const startIdx = (page - 1) * showCount;
   const endIdx = startIdx + showCount;
 
   // Sorting logic
-  let sortedSubjects = [...subjects];
+  let sortedData = [...data];
   if (sortBy === "code") {
-    sortedSubjects.sort((a, b) =>
+    sortedData.sort((a, b) =>
       sortOrder === "asc"
         ? a.code.localeCompare(b.code)
         : b.code.localeCompare(a.code)
     );
   } else if (sortBy === "name") {
-    sortedSubjects.sort((a, b) =>
+    sortedData.sort((a, b) =>
       sortOrder === "asc"
         ? a.name.localeCompare(b.name)
         : b.name.localeCompare(a.name)
     );
   } else if (sortBy === "status") {
-    sortedSubjects.sort((a, b) =>
+    sortedData.sort((a, b) =>
       sortOrder === "asc"
         ? a.status.localeCompare(b.status)
         : b.status.localeCompare(a.status)
     );
   } else {
     // Sr# (original order)
-    sortedSubjects = [...originalSubjects];
+    sortedData = [...originalData];
   }
-  const pageSubjects = sortedSubjects.slice(startIdx, endIdx);
+  const pageData = sortedData.slice(startIdx, endIdx);
 
   // Sorting handler
   const handleSort = (col) => {
@@ -60,10 +55,10 @@ export default function AcademicSubjectTable({
   const handlePrev = () => setPage((p) => Math.max(1, p - 1));
   const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
 
-  // Reset to page 1 if subjects or showCount changes
+  // Reset to page 1 if data or showCount changes
   useEffect(() => {
     setPage(1);
-  }, [subjects, showCount]);
+  }, [data, showCount]);
 
   return (
     <div className="bg-white rounded shadow-sm overflow-auto">
@@ -96,14 +91,14 @@ export default function AcademicSubjectTable({
           </tr>
         </thead>
         <tbody>
-          {pageSubjects.length === 0 ? (
+          {pageData.length === 0 ? (
             <tr>
               <td colSpan={6} className="text-center py-4 text-secondary">
                 No data found
               </td>
             </tr>
           ) : (
-            pageSubjects.map((s, i) => (
+            pageData.map((s, i) => (
               <tr key={s.code}>
                 <td>{startIdx + i + 1}</td>
                 <td>{s.code}</td>
@@ -141,8 +136,8 @@ export default function AcademicSubjectTable({
       </table>
       <div className="py-3 text-center text-secondary border-top fw-medium d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
         <span>
-          Showing {subjects.length === 0 ? 0 : startIdx + 1} to{" "}
-          {Math.min(endIdx, subjects.length)} of {subjects.length} entries
+          Showing {data.length === 0 ? 0 : startIdx + 1} to{" "}
+          {Math.min(endIdx, data.length)} of {data.length} entries
         </span>
         <div>
           <button

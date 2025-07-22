@@ -7,8 +7,9 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js"; // includes Popper
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import UserLogin from "./pages/UserLogin.jsx";
 import Home from "./pages/Home.jsx";
-import AddAcademicSubject from "./pages/AddAcademicSubject.jsx";
+import AddData from "./pages/AddData.jsx";
 import AcademicSubject from "./pages/AcademicSubject.jsx";
+import ProgramType from "./pages/ProgramType.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { seedTestUser } from "./utils/seedUser.js";
@@ -39,7 +40,7 @@ const router = createBrowserRouter([
     path: "/addacademicsubject",
     element: (
       <ProtectedRoute>
-        <AddAcademicSubject />
+        <AddData />
       </ProtectedRoute>
     ),
   },
@@ -47,7 +48,31 @@ const router = createBrowserRouter([
     path: "/editacademicsubject/:id",
     element: (
       <ProtectedRoute>
-        <AddAcademicSubject />
+        <AddData />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/program-type",
+    element: (
+      <ProtectedRoute>
+        <ProgramType />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addprogramtype",
+    element: (
+      <ProtectedRoute>
+        <AddData />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editprogramtype/:id",
+    element: (
+      <ProtectedRoute>
+        <AddData />
       </ProtectedRoute>
     ),
   },

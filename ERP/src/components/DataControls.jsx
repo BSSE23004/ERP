@@ -4,28 +4,29 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
-export default function AcademicSubjectControls({
+export default function DataControls({
   showCount,
   setShowCount,
   search,
   setSearch,
-  subjects = [], // Accept subjects as prop for export
+  data = [], // Accept data as prop for export
+  title = "Academic Subjects", // Add title prop for context
 }) {
   // Export PDF
   const handleExportPDF = () => {
     const doc = new jsPDF();
-    doc.text("Academic Subjects", 14, 10);
+    doc.text(title, 14, 10);
     autoTable(doc, {
       head: [["Code", "Name", "Description", "Status"]],
-      body: subjects.map((s) => [s.code, s.name, s.description, s.status]),
+      body: data.map((s) => [s.code, s.name, s.description, s.status]),
     });
-    doc.save("academic_subjects.pdf");
+    doc.save(`${title.replace(/\s+/g, "_").toLowerCase()}.pdf`);
   };
 
   // Export Excel
   const handleExportExcel = () => {
     const ws = XLSX.utils.json_to_sheet(
-      subjects.map((s) => ({
+      data.map((s) => ({
         Code: s.code,
         Name: s.name,
         Description: s.description,
@@ -33,22 +34,22 @@ export default function AcademicSubjectControls({
       }))
     );
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Subjects");
-    XLSX.writeFile(wb, "academic_subjects.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, title);
+    XLSX.writeFile(wb, `${title.replace(/\s+/g, "_").toLowerCase()}.xlsx`);
   };
 
   // Print
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
-    const tableRows = subjects
+    const tableRows = data
       .map(
         (s) =>
           `<tr><td>${s.code}</td><td>${s.name}</td><td>${s.description}</td><td>${s.status}</td></tr>`
       )
       .join("");
     printWindow.document.write(`
-      <html><head><title>Print Academic Subjects</title></head><body>
-      <h2>Academic Subjects</h2>
+      <html><head><title>Print ${title}</title></head><body>
+      <h2>${title}</h2>
       <table border="1" cellpadding="5" cellspacing="0">
         <thead><tr><th>Code</th><th>Name</th><th>Description</th><th>Status</th></tr></thead>
         <tbody>${tableRows}</tbody>

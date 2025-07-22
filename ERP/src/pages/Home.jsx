@@ -8,23 +8,6 @@ function Home() {
     // Navigate or filter based on `val`
     console.log("Search:", val);
   };
-  useEffect(() => {
-    const setFavicon = (url) => {
-      let link = document.querySelector("link[rel~='icon']");
-      if (!link) {
-        link = document.createElement("link");
-        link.rel = "icon";
-        document.head.appendChild(link);
-      }
-      link.href = url;
-    };
-    setFavicon("https://demo.algosofttech.com/admin/assets/img/fav-icon.png");
-    return () => {
-      setFavicon(
-        "https://demo.algosofttech.com/admin/assets/img/logo-small.png"
-      );
-    };
-  }, []);
 
   return (
     <div className="d-flex flex-row justify-content-start vw-100 ">

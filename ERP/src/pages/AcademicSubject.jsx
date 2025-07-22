@@ -1,19 +1,15 @@
-import subjectsData from "../utils/subjects.json";
 import { useState, useEffect } from "react";
-import AcademicSubjectHeader from "../components/AcademicSubjectHeader";
 import { useNavigate } from "react-router-dom";
-import AcademicSubjectControls from "../components/AcademicSubjectControls";
-import AcademicSubjectTable from "../components/AcademicSubjectTable";
+import DataHeader from "../components/DataHeader";
+import DataControls from "../components/DataControls";
+import DataTable from "../components/DataTable";
 import Sidebar from "../components/Sidebar";
 import AppNavbar from "../components/Navbar";
 function AcademicSubject() {
   const navigate = useNavigate();
   const LOCAL_KEY = "academic_subjects";
-  // Load from localStorage if available, otherwise use subjectsData
   const storedSubjects = localStorage.getItem(LOCAL_KEY);
-  const initialSubjects = storedSubjects
-    ? JSON.parse(storedSubjects)
-    : subjectsData;
+  const initialSubjects = storedSubjects ? JSON.parse(storedSubjects) : [];
   const [subjects, setSubjects] = useState(initialSubjects);
   const [showModal, setShowModal] = useState(false);
   const [subjectToDelete, setSubjectToDelete] = useState(null);
@@ -68,16 +64,16 @@ function AcademicSubject() {
         >
           <AppNavbar />
           <div style={{ marginTop: 50, padding: "2rem" }}>
-            <AcademicSubjectHeader onAdd={handleAdd} />
-            <AcademicSubjectControls
+            <DataHeader onAdd={handleAdd} />
+            <DataControls
               showCount={showCount}
               setShowCount={setShowCount}
               search={search}
               setSearch={setSearch}
-              subjects={filtered}
+              data={filtered}
             />
-            <AcademicSubjectTable
-              subjects={filtered}
+            <DataTable
+              data={filtered}
               showCount={showCount}
               onEdit={handleEdit}
               onDelete={handleDelete}

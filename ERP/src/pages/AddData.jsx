@@ -1,48 +1,53 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import subjectsData from "../utils/subjects.json";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+// Removed subjects.json import
 import Sidebar from "../components/Sidebar";
 import AppNavbar from "../components/Navbar";
 
-export default function AddAcademicSubject() {
+export default function AddData() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const LOCAL_KEY = "academic_subjects";
-  // Get current subjects from localStorage or JSON
-  const storedSubjects = localStorage.getItem(LOCAL_KEY);
-  const initialSubjects = storedSubjects
-    ? JSON.parse(storedSubjects)
-    : subjectsData;
+  const location = useLocation();
 
-  // If editing, find the subject by code (id)
-  const editingSubject = id ? initialSubjects.find((s) => s.code === id) : null;
+  // Determine context: subject or program type
+  const isProgramType = location.pathname.includes("programtype");
+  const LOCAL_KEY = isProgramType ? "program_types" : "academic_subjects";
 
-  // Generate next code for new subject
+  // Get current items from localStorage only
+  const storedItems = localStorage.getItem(LOCAL_KEY);
+  const initialItems = storedItems ? JSON.parse(storedItems) : [];
+
+  // If editing, find the item by code (id)
+  const editingItem = id ? initialItems.find((s) => s.code === id) : null;
+
+  // Generate next code for new item
   const getNextCode = () => {
-    if (!initialSubjects.length) return "AS-0000001";
-    const last = initialSubjects[initialSubjects.length - 1].code;
+    if (!initialItems.length) return isProgramType ? "PT-0001" : "AS-0000001";
+    const last = initialItems[initialItems.length - 1].code;
     const num = parseInt(last.split("-")[1], 10) + 1;
-    return `AS-${num.toString().padStart(7, "0")}`;
+    return isProgramType
+      ? `PT-${num.toString().padStart(4, "0")}`
+      : `AS-${num.toString().padStart(7, "0")}`;
   };
 
   const [code, setCode] = useState(
-    editingSubject ? editingSubject.code : getNextCode()
+    editingItem ? editingItem.code : getNextCode()
   );
-  const [name, setName] = useState(editingSubject ? editingSubject.name : "");
+  const [name, setName] = useState(editingItem ? editingItem.name : "");
   const [description, setDescription] = useState(
-    editingSubject ? editingSubject.description : ""
+    editingItem ? editingItem.description : ""
   );
   const [status, setStatus] = useState(
-    editingSubject ? editingSubject.status === "Active" : true
+    editingItem ? editingItem.status === "Active" : true
   );
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (editingSubject) {
-      setCode(editingSubject.code);
-      setName(editingSubject.name);
-      setDescription(editingSubject.description);
-      setStatus(editingSubject.status === "Active");
+    if (editingItem) {
+      setCode(editingItem.code);
+      setName(editingItem.name);
+      setDescription(editingItem.description);
+      setStatus(editingItem.status === "Active");
     }
     // eslint-disable-next-line
   }, [id]);
@@ -53,24 +58,24 @@ export default function AddAcademicSubject() {
       setError("Name is required");
       return;
     }
-    const newSubject = {
+    const newItem = {
       code,
       name: name.trim(),
       description: description.trim(),
       status: status ? "Active" : "Inactive",
     };
     let updated;
-    if (editingSubject) {
+    if (editingItem) {
       // Update existing
-      updated = initialSubjects.map((s) =>
-        s.code === editingSubject.code ? newSubject : s
+      updated = initialItems.map((s) =>
+        s.code === editingItem.code ? newItem : s
       );
     } else {
       // Add new
-      updated = [...initialSubjects, newSubject];
+      updated = [...initialItems, newItem];
     }
     localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
-    navigate("/academic-subject");
+    navigate(isProgramType ? "/program-type" : "/academic-subject");
   };
 
   return (
@@ -84,8 +89,12 @@ export default function AddAcademicSubject() {
         <div style={{ flex: 1, padding: "2rem 2rem 0 2rem", marginTop: 50 }}>
           <div className="bg-white rounded shadow-sm p-4">
             <h3 className="mb-4">
-              {editingSubject
-                ? "Edit Academic Subject"
+              {editingItem
+                ? isProgramType
+                  ? "Edit Program Type"
+                  : "Edit Academic Subject"
+                : isProgramType
+                ? "Create New Program Type"
                 : "Create New Academic Subject"}
             </h3>
             <form onSubmit={handleSave}>
@@ -134,15 +143,25 @@ export default function AddAcademicSubject() {
               <div className="d-flex gap-2">
                 <button
                   type="submit"
-                  className="btn  text-white px-4"
+                  className="btn text-white px-4"
                   style={{ backgroundColor: "#ff6600" }}
                 >
-                  {editingSubject ? "Update" : "Save"}
+                  {editingItem
+                    ? isProgramType
+                      ? "Update"
+                      : "Update"
+                    : isProgramType
+                    ? "Save"
+                    : "Save"}
                 </button>
                 <button
                   type="button"
                   className="btn btn-dark px-4"
-                  onClick={() => navigate("/academic-subject")}
+                  onClick={() =>
+                    navigate(
+                      isProgramType ? "/program-type" : "/academic-subject"
+                    )
+                  }
                 >
                   Back
                 </button>
