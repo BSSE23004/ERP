@@ -9,9 +9,12 @@ export default function AddData() {
   const { id } = useParams();
   const location = useLocation();
 
-  // Determine context: subject or program type
+  // Determine context: subject, program type, or academic program
   const isProgramType = location.pathname.includes("programtype");
-  const LOCAL_KEY = isProgramType ? "program_types" : "academic_subjects";
+  const isAcademicProgram = location.pathname.includes("academicprogram");
+  let LOCAL_KEY = "academic_subjects";
+  if (isProgramType) LOCAL_KEY = "program_types";
+  if (isAcademicProgram) LOCAL_KEY = "academic_programs";
 
   // Get current items from localStorage only
   const storedItems = localStorage.getItem(LOCAL_KEY);
@@ -22,12 +25,16 @@ export default function AddData() {
 
   // Generate next code for new item
   const getNextCode = () => {
-    if (!initialItems.length) return isProgramType ? "PT-0001" : "AS-0000001";
+    if (!initialItems.length) {
+      if (isProgramType) return "PT-0001";
+      if (isAcademicProgram) return "AP-0000001";
+      return "AS-0000001";
+    }
     const last = initialItems[initialItems.length - 1].code;
     const num = parseInt(last.split("-")[1], 10) + 1;
-    return isProgramType
-      ? `PT-${num.toString().padStart(4, "0")}`
-      : `AS-${num.toString().padStart(7, "0")}`;
+    if (isProgramType) return `PT-${num.toString().padStart(4, "0")}`;
+    if (isAcademicProgram) return `AP-${num.toString().padStart(7, "0")}`;
+    return `AS-${num.toString().padStart(7, "0")}`;
   };
 
   const [code, setCode] = useState(
@@ -39,6 +46,13 @@ export default function AddData() {
   );
   const [status, setStatus] = useState(
     editingItem ? editingItem.status === "Active" : true
+  );
+  // Academic Program specific fields
+  const [programType, setProgramType] = useState(
+    editingItem ? editingItem.programType || "" : ""
+  );
+  const [programFee, setProgramFee] = useState(
+    editingItem ? editingItem.programFee || "" : ""
   );
   const [error, setError] = useState("");
 
@@ -58,12 +72,19 @@ export default function AddData() {
       setError("Name is required");
       return;
     }
-    const newItem = {
+    let newItem = {
       code,
       name: name.trim(),
       description: description.trim(),
       status: status ? "Active" : "Inactive",
     };
+    if (isAcademicProgram) {
+      newItem = {
+        ...newItem,
+        programType: programType.trim(),
+        programFee: programFee.trim(),
+      };
+    }
     let updated;
     if (editingItem) {
       // Update existing
@@ -75,7 +96,13 @@ export default function AddData() {
       updated = [...initialItems, newItem];
     }
     localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
-    navigate(isProgramType ? "/program-type" : "/academic-subject");
+    if (isAcademicProgram) {
+      navigate("/academic-program");
+    } else if (isProgramType) {
+      navigate("/program-type");
+    } else {
+      navigate("/academic-subject");
+    }
   };
 
   return (
@@ -90,9 +117,13 @@ export default function AddData() {
           <div className="bg-white rounded shadow-sm p-4">
             <h3 className="mb-4">
               {editingItem
-                ? isProgramType
+                ? isAcademicProgram
+                  ? "Edit Academic Program"
+                  : isProgramType
                   ? "Edit Program Type"
                   : "Edit Academic Subject"
+                : isAcademicProgram
+                ? "Create New Academic Program"
                 : isProgramType
                 ? "Create New Program Type"
                 : "Create New Academic Subject"}
@@ -120,6 +151,34 @@ export default function AddData() {
                   />
                 </div>
               </div>
+              {isAcademicProgram && (
+                <div className="row mb-3">
+                  <div className="col-md-6 mb-3 mb-md-0">
+                    <label className="form-label fw-semibold">
+                      Program Type*
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={programType}
+                      onChange={(e) => setProgramType(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">
+                      Program Fee*
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={programFee}
+                      onChange={(e) => setProgramFee(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
               <div className="mb-3">
                 <label className="form-label fw-semibold">Description</label>
                 <textarea
@@ -147,9 +206,13 @@ export default function AddData() {
                   style={{ backgroundColor: "#ff6600" }}
                 >
                   {editingItem
-                    ? isProgramType
+                    ? isAcademicProgram
+                      ? "Update"
+                      : isProgramType
                       ? "Update"
                       : "Update"
+                    : isAcademicProgram
+                    ? "Save"
                     : isProgramType
                     ? "Save"
                     : "Save"}
@@ -157,11 +220,15 @@ export default function AddData() {
                 <button
                   type="button"
                   className="btn btn-dark px-4"
-                  onClick={() =>
-                    navigate(
-                      isProgramType ? "/program-type" : "/academic-subject"
-                    )
-                  }
+                  onClick={() => {
+                    if (isAcademicProgram) {
+                      navigate("/academic-program");
+                    } else if (isProgramType) {
+                      navigate("/program-type");
+                    } else {
+                      navigate("/academic-subject");
+                    }
+                  }}
                 >
                   Back
                 </button>

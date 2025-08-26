@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 
-export default function DataTable({ data, showCount, onEdit, onDelete }) {
+export default function DataTable({
+  data,
+  showCount,
+  onEdit,
+  onDelete,
+  columns,
+}) {
   // Sorting state
   const [sortBy, setSortBy] = useState("sr"); // "sr", "code", "name", "status"
   const [sortOrder, setSortOrder] = useState("asc"); // "asc" or "desc"
@@ -29,6 +35,18 @@ export default function DataTable({ data, showCount, onEdit, onDelete }) {
         ? a.name.localeCompare(b.name)
         : b.name.localeCompare(a.name)
     );
+  } else if (sortBy === "programType") {
+    sortedData.sort((a, b) =>
+      sortOrder === "asc"
+        ? (a.programType || "").localeCompare(b.programType || "")
+        : (b.programType || "").localeCompare(a.programType || "")
+    );
+  } else if (sortBy === "programFee") {
+    sortedData.sort((a, b) => {
+      const feeA = Number(a.programFee) || 0;
+      const feeB = Number(b.programFee) || 0;
+      return sortOrder === "asc" ? feeA - feeB : feeB - feeA;
+    });
   } else if (sortBy === "status") {
     sortedData.sort((a, b) =>
       sortOrder === "asc"
@@ -65,66 +83,65 @@ export default function DataTable({ data, showCount, onEdit, onDelete }) {
       <table className="table table-hover align-middle mb-0">
         <thead className="table-light">
           <tr>
-            <th style={{ cursor: "pointer" }} onClick={() => handleSort("sr")}>
-              Sr# {sortBy === "sr" && (sortOrder === "asc" ? "▲" : "▼")}
-            </th>
-            <th
-              style={{ cursor: "pointer" }}
-              onClick={() => handleSort("code")}
-            >
-              Code {sortBy === "code" && (sortOrder === "asc" ? "▲" : "▼")}
-            </th>
-            <th
-              style={{ cursor: "pointer" }}
-              onClick={() => handleSort("name")}
-            >
-              Name {sortBy === "name" && (sortOrder === "asc" ? "▲" : "▼")}
-            </th>
-            <th>Description</th>
-            <th
-              style={{ cursor: "pointer" }}
-              onClick={() => handleSort("status")}
-            >
-              Status {sortBy === "status" && (sortOrder === "asc" ? "▲" : "▼")}
-            </th>
+            <th>Sr #</th>
+            {columns.map((col) => (
+              <th
+                key={col.field}
+                style={col.sortable ? { cursor: "pointer" } : {}}
+                onClick={col.sortable ? () => handleSort(col.field) : undefined}
+              >
+                {col.header}
+                {col.sortable && sortBy === col.field && (
+                  <span className="ms-1">
+                    {sortOrder === "asc" ? "▲" : "▼"}
+                  </span>
+                )}
+              </th>
+            ))}
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
           {pageData.length === 0 ? (
             <tr>
-              <td colSpan={6} className="text-center py-4 text-secondary">
+              <td
+                colSpan={columns.length + 2}
+                className="text-center py-4 text-secondary"
+              >
                 No data found
               </td>
             </tr>
           ) : (
-            pageData.map((s, i) => (
-              <tr key={s.code}>
+            pageData.map((row, i) => (
+              <tr key={row.code}>
                 <td>{startIdx + i + 1}</td>
-                <td>{s.code}</td>
-                <td>{s.name}</td>
-                <td>{s.description}</td>
-                <td>
-                  <span
-                    className={`badge px-3 py-2 fw-semibold ${
-                      s.status === "Active" ? "bg-success" : "bg-danger"
-                    }`}
-                  >
-                    {s.status}
-                  </span>
-                </td>
+                {columns.map((col) => (
+                  <td key={col.field}>
+                    {col.field === "status" ? (
+                      <span
+                        className={`badge px-3 py-2 fw-semibold ${
+                          row.status === "Active" ? "bg-success" : "bg-danger"
+                        }`}
+                      >
+                        {row.status}
+                      </span>
+                    ) : (
+                      row[col.field]
+                    )}
+                  </td>
+                ))}
                 <td>
                   <button
                     title="Edit"
                     className="btn btn-link p-0 me-2"
-                    onClick={() => onEdit(s)}
+                    onClick={() => onEdit(row)}
                   >
                     <i className="bx bx-edit text-primary fs-5"></i>
                   </button>
                   <button
                     title="Delete"
                     className="btn btn-link p-0"
-                    onClick={() => onDelete(s)}
+                    onClick={() => onDelete(row)}
                   >
                     <i className="bx bx-trash text-danger fs-5"></i>
                   </button>

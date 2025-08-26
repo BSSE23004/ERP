@@ -6,6 +6,13 @@ import DataTable from "../components/DataTable";
 import Sidebar from "../components/Sidebar";
 import AppNavbar from "../components/Navbar";
 function AcademicSubject() {
+  // Columns for Academic Subject
+  const columns = [
+    { field: "code", header: "Code", sortable: true },
+    { field: "name", header: "Name", sortable: true },
+    { field: "description", header: "Description" },
+    { field: "status", header: "Status", sortable: true },
+  ];
   const navigate = useNavigate();
   const LOCAL_KEY = "academic_subjects";
   const storedSubjects = localStorage.getItem(LOCAL_KEY);
@@ -71,12 +78,14 @@ function AcademicSubject() {
               search={search}
               setSearch={setSearch}
               data={filtered}
+              columns={columns}
             />
             <DataTable
               data={filtered}
               showCount={showCount}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              columns={columns}
             />
           </div>
         </div>

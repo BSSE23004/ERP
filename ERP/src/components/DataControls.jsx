@@ -11,14 +11,20 @@ export default function DataControls({
   setSearch,
   data = [], // Accept data as prop for export
   title = "Academic Subjects", // Add title prop for context
+  columns = [
+    { field: "code", header: "Code" },
+    { field: "name", header: "Name" },
+    { field: "description", header: "Description" },
+    { field: "status", header: "Status" },
+  ],
 }) {
   // Export PDF
   const handleExportPDF = () => {
     const doc = new jsPDF();
     doc.text(title, 14, 10);
     autoTable(doc, {
-      head: [["Code", "Name", "Description", "Status"]],
-      body: data.map((s) => [s.code, s.name, s.description, s.status]),
+      head: [columns.map((col) => col.header)],
+      body: data.map((row) => columns.map((col) => row[col.field])),
     });
     doc.save(`${title.replace(/\s+/g, "_").toLowerCase()}.pdf`);
   };
@@ -26,12 +32,13 @@ export default function DataControls({
   // Export Excel
   const handleExportExcel = () => {
     const ws = XLSX.utils.json_to_sheet(
-      data.map((s) => ({
-        Code: s.code,
-        Name: s.name,
-        Description: s.description,
-        Status: s.status,
-      }))
+      data.map((row) => {
+        const obj = {};
+        columns.forEach((col) => {
+          obj[col.header] = row[col.field];
+        });
+        return obj;
+      })
     );
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, title);
@@ -43,15 +50,19 @@ export default function DataControls({
     const printWindow = window.open("", "_blank");
     const tableRows = data
       .map(
-        (s) =>
-          `<tr><td>${s.code}</td><td>${s.name}</td><td>${s.description}</td><td>${s.status}</td></tr>`
+        (row) =>
+          `<tr>${columns
+            .map((col) => `<td>${row[col.field]}</td>`)
+            .join("")}</tr>`
       )
       .join("");
     printWindow.document.write(`
       <html><head><title>Print ${title}</title></head><body>
       <h2>${title}</h2>
       <table border="1" cellpadding="5" cellspacing="0">
-        <thead><tr><th>Code</th><th>Name</th><th>Description</th><th>Status</th></tr></thead>
+        <thead><tr>${columns
+          .map((col) => `<th>${col.header}</th>`)
+          .join("")}</tr></thead>
         <tbody>${tableRows}</tbody>
       </table>
       </body></html>

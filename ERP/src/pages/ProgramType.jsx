@@ -7,6 +7,13 @@ import DataTable from "../components/DataTable";
 import { useNavigate } from "react-router-dom";
 
 export default function ProgramType() {
+  // Columns for Program Type
+  const columns = [
+    { field: "code", header: "Code", sortable: true },
+    { field: "name", header: "Name", sortable: true },
+    { field: "description", header: "Description" },
+    { field: "status", header: "Status", sortable: true },
+  ];
   const navigate = useNavigate();
   const LOCAL_KEY = "program_types";
   // Load from localStorage
@@ -76,12 +83,14 @@ export default function ProgramType() {
             setSearch={setSearch}
             data={filtered}
             title="Program Types"
+            columns={columns}
           />
           <DataTable
             data={filtered}
             showCount={showCount}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            columns={columns}
           />
         </div>
         {/* Modal for Delete Confirmation */}

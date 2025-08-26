@@ -4,7 +4,7 @@ export default function DataHeader({
   onAdd,
   title = "Academic Subject List",
   subtitle = "Manage Your Academic Subject",
-  buttonText = "+ Add New Academic Subject",
+  buttonText = "Add New Academic Subject",
 }) {
   return (
     <div className="d-flex justify-content-between align-items-center mb-4">
