@@ -14,8 +14,8 @@
     "children": [
       { "id": "program-type", "label": "Program Type" },
       { "id": "academic-program", "label": "Academic Program" },
-      { "id": "class", "label": "Class" },
-      { "id": "section", "label": "Section" }
+      { "id": "academic-class", "label": "Class" },
+      { "id": "academic-section", "label": "Section" }
     ]
   },
   {
