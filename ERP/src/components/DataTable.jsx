@@ -21,38 +21,29 @@ export default function DataTable({
   const startIdx = (page - 1) * showCount;
   const endIdx = startIdx + showCount;
 
-  // Sorting logic
+  // Dynamic sorting logic for all columns
   let sortedData = [...data];
-  if (sortBy === "code") {
-    sortedData.sort((a, b) =>
-      sortOrder === "asc"
-        ? a.code.localeCompare(b.code)
-        : b.code.localeCompare(a.code)
-    );
-  } else if (sortBy === "name") {
-    sortedData.sort((a, b) =>
-      sortOrder === "asc"
-        ? a.name.localeCompare(b.name)
-        : b.name.localeCompare(a.name)
-    );
-  } else if (sortBy === "programType") {
-    sortedData.sort((a, b) =>
-      sortOrder === "asc"
-        ? (a.programType || "").localeCompare(b.programType || "")
-        : (b.programType || "").localeCompare(a.programType || "")
-    );
-  } else if (sortBy === "programFee") {
+  if (sortBy && sortBy !== "sr") {
     sortedData.sort((a, b) => {
-      const feeA = Number(a.programFee) || 0;
-      const feeB = Number(b.programFee) || 0;
-      return sortOrder === "asc" ? feeA - feeB : feeB - feeA;
+      let aVal = a[sortBy] ?? "";
+      let bVal = b[sortBy] ?? "";
+      // Numeric sort for amount
+      if (sortBy === "amount" || sortBy === "programFee") {
+        aVal = Number(aVal) || 0;
+        bVal = Number(bVal) || 0;
+        return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
+      }
+      // Date sort for paymentDate, chequeDate, etc.
+      if (sortBy.toLowerCase().includes("date")) {
+        const aDate = new Date(aVal);
+        const bDate = new Date(bVal);
+        return sortOrder === "asc" ? aDate - bDate : bDate - aDate;
+      }
+      // String sort for all other columns
+      return sortOrder === "asc"
+        ? String(aVal).localeCompare(String(bVal))
+        : String(bVal).localeCompare(String(aVal));
     });
-  } else if (sortBy === "status") {
-    sortedData.sort((a, b) =>
-      sortOrder === "asc"
-        ? a.status.localeCompare(b.status)
-        : b.status.localeCompare(a.status)
-    );
   } else {
     // Sr# (original order)
     sortedData = [...originalData];

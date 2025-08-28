@@ -13,6 +13,8 @@ import "./App.css";
 import AcademicProgram from "./pages/AcademicProgram.jsx";
 import AcademicClass from "./pages/AcademicClass";
 import AcademicSection from "./pages/AcademicSection";
+import CustomerPayment from "./pages/CustomerPayment";
+import AddCustomerPayment from "./pages/AddCustomerPayment";
 seedTestUser();
 
 const router = createBrowserRouter([
@@ -34,6 +36,54 @@ const router = createBrowserRouter([
             <Sidebar />
             <div className="flex-grow-1">
               <Home />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/customer-payment",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <CustomerPayment />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addcustomerpayment",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddCustomerPayment />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editcustomerpayment/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddCustomerPayment />
             </div>
           </div>
         </div>

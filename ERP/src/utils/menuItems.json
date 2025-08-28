@@ -1,6 +1,6 @@
 [
   {
-    "id": "academic",
+    "id": "academic-subject",
     "label": "Academic",
     "icon": "bx bx-chevron-right",
     "children": [

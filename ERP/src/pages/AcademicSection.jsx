@@ -74,7 +74,7 @@ export default function AcademicSection() {
             title="Academic Section List"
             subtitle="Manage Your Academic Section"
             onAdd={handleAdd}
-            buttonText="+ Add New Academic Section"
+            buttonText="Add New Academic Section"
           />
           <DataControls
             showCount={showCount}
