@@ -13,7 +13,7 @@ const paymentTypeOptions = [
   "ADVANCE PAYMENT",
 ];
 
-export default function AddCustomerPayment() {
+export default function AddAccountsData() {
   const navigate = useNavigate();
   const { id } = useParams();
   const LOCAL_KEY = "customer_payments";

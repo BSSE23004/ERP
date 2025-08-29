@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 // Removed subjects.json import
-import Sidebar from "../components/Sidebar";
-import AppNavbar from "../components/Navbar";
+import Sidebar from "../../components/Sidebar";
+import AppNavbar from "../../components/Navbar";
 
 export default function AddData() {
   const navigate = useNavigate();

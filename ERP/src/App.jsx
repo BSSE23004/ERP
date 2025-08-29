@@ -1,23 +1,72 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import UserLogin from "./pages/UserLogin";
 import Home from "./pages/Home";
-import AddData from "./pages/AddData";
-import AcademicSubject from "./pages/AcademicSubject";
-import ProgramType from "./pages/ProgramType";
+import AddData from "./pages/Academics/AddData.jsx";
+import AcademicSubject from "./pages/Academics/AcademicSubject.jsx";
+import ProgramType from "./pages/Academics/ProgramType.jsx";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppNavbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import { seedTestUser } from "./utils/seedUser.js";
 import "./App.css";
-import AcademicProgram from "./pages/AcademicProgram.jsx";
-import AcademicClass from "./pages/AcademicClass";
-import AcademicSection from "./pages/AcademicSection";
+import AcademicProgram from "./pages/Academics/AcademicProgram.jsx";
+import AcademicClass from "./pages/Academics/AcademicClass.jsx";
+import AcademicSection from "./pages/Academics/AcademicSection.jsx";
 import CustomerPayment from "./pages/CustomerPayment";
-import AddCustomerPayment from "./pages/AddCustomerPayment";
+import VendorPayment from "./pages/VendorPayment.jsx";
+import AddAccountsData from "./pages/AddAccountsData.jsx";
 seedTestUser();
 
 const router = createBrowserRouter([
+  {
+    path: "/vendor-payment",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <VendorPayment />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addvendorpayment",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editvendorpayment/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
   {
     path: "/",
     element: <UserLogin />,
@@ -67,7 +116,7 @@ const router = createBrowserRouter([
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddCustomerPayment />
+              <AddAccountsData />
             </div>
           </div>
         </div>
@@ -83,7 +132,7 @@ const router = createBrowserRouter([
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddCustomerPayment />
+              <AddAccountsData />
             </div>
           </div>
         </div>
