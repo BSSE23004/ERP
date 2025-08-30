@@ -36,7 +36,7 @@ export default function VendorPayment() {
     navigate("/addvendorpayment");
   };
   const handleEdit = (payment) => {
-    navigate(`/editvendorpayment/${payment.code}`);
+    navigate(`/editvendorpayment/${payment.id}`);
   };
   const handleDelete = (payment) => {
     setPaymentToDelete(payment);

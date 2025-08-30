@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import AppNavbar from "../components/Navbar";
 
@@ -12,14 +12,27 @@ const paymentTypeOptions = [
   "CHEQUE",
   "ADVANCE PAYMENT",
 ];
+const grnOptions = ["GRN-001", "GRN-002", "GRN-003"];
+const billOptions = ["CP-0001", "CP-0002", "CP-0003"];
+const customerOptions = ["Customer A", "Customer B", "Customer C"];
+const vendorOptions = ["ABC Suppliers", "N STARS", "test vendor smart pos"];
+const bankOptions = ["Habib Bank", "Meezan Bank", "UBL", "MCB"];
+const branchOptions = ["Ibrahim Sattar", "Main Branch", "North Branch"];
 
 export default function AddAccountsData() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const LOCAL_KEY = "customer_payments";
-  const [code, setCode] = useState("");
+  const location = useLocation();
+  const isVendor = location.pathname.includes("vendor");
+  const LOCAL_KEY = isVendor ? "vendor_payments" : "customer_payments";
+  // Vendor Payment fields
+  const [grn, setGrn] = useState("");
+  const [vendor, setVendor] = useState("");
+  // Customer Payment fields
+  const [bill, setBill] = useState("");
   const [customer, setCustomer] = useState("");
-  const [paymentType, setPaymentType] = useState(paymentTypeOptions[0]);
+  // Shared fields
+  const [paymentType, setPaymentType] = useState(paymentTypeOptions[3]);
   const [paymentDate, setPaymentDate] = useState("");
   const [bank, setBank] = useState("");
   const [branch, setBranch] = useState("");
@@ -37,44 +50,46 @@ export default function AddAccountsData() {
     const items = stored ? JSON.parse(stored) : [];
     if (id) {
       // Edit mode
-      const payment = items.find((p) => p.code === id);
+      const payment = items.find((p) => p.id === id);
       if (payment) {
-        setCode(payment.code);
-        setCustomer(payment.customer);
-        setPaymentType(payment.paymentType);
-        setPaymentDate(payment.paymentDate);
-        setBank(payment.bank);
-        setBranch(payment.branch);
-        setChequeNo(payment.chequeNo);
-        setChequeDate(payment.chequeDate);
-        setChequeCashDate(payment.chequeCashDate);
-        setAmount(payment.amount);
-        setPaymentNote(payment.paymentNote);
+        if (isVendor) {
+          setGrn(payment.grn || "");
+          setVendor(payment.vendor || "");
+        } else {
+          setBill(payment.bill || "");
+          setCustomer(payment.customer || "");
+        }
+        setPaymentType(payment.paymentType || paymentTypeOptions[3]);
+        setPaymentDate(payment.paymentDate || "");
+        setBank(payment.bank || "");
+        setBranch(payment.branch || "");
+        setChequeNo(payment.chequeNo || "");
+        setChequeDate(payment.chequeDate || "");
+        setChequeCashDate(payment.chequeCashDate || "");
+        setAmount(payment.amount || "");
+        setPaymentNote(payment.paymentNote || "");
         setStatus(payment.status === "Active");
-      }
-    } else {
-      // Add mode
-      if (items.length === 0) {
-        setCode("CP-0001");
-      } else {
-        const last = items[items.length - 1].code;
-        const num = parseInt(last.split("-")[1], 10) + 1;
-        setCode(`CP-${num.toString().padStart(4, "0")}`);
       }
     }
   }, [id]);
 
   const handleSave = (e) => {
     e.preventDefault();
-    if (!customer || !paymentType || !paymentDate || !amount) {
-      setError("Please fill all required fields");
-      return;
+    if (isVendor) {
+      if (!vendor || !paymentType || !paymentDate || !amount) {
+        setError("Please fill all required fields");
+        return;
+      }
+    } else {
+      if (!customer || !paymentType || !paymentDate || !amount) {
+        setError("Please fill all required fields");
+        return;
+      }
     }
     const stored = localStorage.getItem(LOCAL_KEY);
     const items = stored ? JSON.parse(stored) : [];
     const newItem = {
-      code,
-      customer,
+      id: id || Date.now().toString(),
       paymentType,
       paymentDate,
       bank,
@@ -85,17 +100,18 @@ export default function AddAccountsData() {
       amount,
       paymentNote,
       status: status ? "Active" : "Inactive",
+      ...(isVendor ? { grn, vendor } : { bill, customer }),
     };
     let updatedItems;
     if (id) {
       // Edit mode: update existing
-      updatedItems = items.map((p) => (p.code === id ? newItem : p));
+      updatedItems = items.map((p) => (p.id === id ? newItem : p));
     } else {
       // Add mode: add new
       updatedItems = [...items, newItem];
     }
     localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
-    navigate("/customer-payment");
+    navigate(isVendor ? "/vendor-payment" : "/customer-payment");
   };
 
   return (
@@ -109,47 +125,106 @@ export default function AddAccountsData() {
         <div style={{ flex: 1, padding: "2rem 2rem 0 2rem", marginTop: 50 }}>
           <div className="bg-white rounded shadow-sm p-4">
             <h3 className="mb-4">
-              {id ? "Edit" : "Create New"} Customer Payment
+              {id
+                ? isVendor
+                  ? "Edit Vendor Payment"
+                  : "Edit Customer Payment"
+                : isVendor
+                ? "Create New Vendor Payment"
+                : "Create New Customer Payment"}
             </h3>
             <form onSubmit={handleSave}>
               <div className="row mb-3">
-                <div className="col-md-3 mb-3 mb-md-0">
-                  <label className="form-label fw-semibold">
-                    Bill/Invoice No
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={code}
-                    disabled
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label fw-semibold">Customer*</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={customer}
-                    onChange={(e) => setCustomer(e.target.value)}
-                    required
-                  />
-                </div>
+                {isVendor ? (
+                  <>
+                    <div className="col-md-3 mb-3 mb-md-0">
+                      <label className="form-label fw-semibold">GRN</label>
+                      <input
+                        className="form-control"
+                        list="grn-list"
+                        value={grn}
+                        onChange={(e) => setGrn(e.target.value)}
+                        placeholder="Select or type GRN"
+                      />
+                      <datalist id="grn-list">
+                        {grnOptions.map((opt) => (
+                          <option key={opt} value={opt} />
+                        ))}
+                      </datalist>
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">Vendor*</label>
+                      <input
+                        className="form-control"
+                        list="vendor-list"
+                        value={vendor}
+                        onChange={(e) => setVendor(e.target.value)}
+                        placeholder="Select or type Vendor"
+                        required
+                      />
+                      <datalist id="vendor-list">
+                        {vendorOptions.map((opt) => (
+                          <option key={opt} value={opt} />
+                        ))}
+                      </datalist>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="col-md-3 mb-3 mb-md-0">
+                      <label className="form-label fw-semibold">
+                        Bill/Invoice No
+                      </label>
+                      <input
+                        className="form-control"
+                        list="bill-list"
+                        value={bill}
+                        onChange={(e) => setBill(e.target.value)}
+                        placeholder="Select or type Bill/Invoice No"
+                      />
+                      <datalist id="bill-list">
+                        {billOptions.map((opt) => (
+                          <option key={opt} value={opt} />
+                        ))}
+                      </datalist>
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">
+                        Customer*
+                      </label>
+                      <input
+                        className="form-control"
+                        list="customer-list"
+                        value={customer}
+                        onChange={(e) => setCustomer(e.target.value)}
+                        placeholder="Select or type Customer"
+                        required
+                      />
+                      <datalist id="customer-list">
+                        {customerOptions.map((opt) => (
+                          <option key={opt} value={opt} />
+                        ))}
+                      </datalist>
+                    </div>
+                  </>
+                )}
                 <div className="col-md-3">
                   <label className="form-label fw-semibold">
                     Payment Type*
                   </label>
-                  <select
-                    className="form-select"
+                  <input
+                    className="form-control"
+                    list="payment-type-list"
                     value={paymentType}
                     onChange={(e) => setPaymentType(e.target.value)}
+                    placeholder="Select or type Payment Type"
                     required
-                  >
+                  />
+                  <datalist id="payment-type-list">
                     {paymentTypeOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
+                      <option key={opt} value={opt} />
                     ))}
-                  </select>
+                  </datalist>
                 </div>
                 <div className="col-md-3">
                   <label className="form-label fw-semibold">
@@ -168,20 +243,32 @@ export default function AddAccountsData() {
                 <div className="col-md-3 mb-3 mb-md-0">
                   <label className="form-label fw-semibold">Bank</label>
                   <input
-                    type="text"
                     className="form-control"
+                    list="bank-list"
                     value={bank}
                     onChange={(e) => setBank(e.target.value)}
+                    placeholder="Select or type Bank"
                   />
+                  <datalist id="bank-list">
+                    {bankOptions.map((opt) => (
+                      <option key={opt} value={opt} />
+                    ))}
+                  </datalist>
                 </div>
                 <div className="col-md-3">
                   <label className="form-label fw-semibold">Branch</label>
                   <input
-                    type="text"
                     className="form-control"
+                    list="branch-list"
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
+                    placeholder="Select or type Branch"
                   />
+                  <datalist id="branch-list">
+                    {branchOptions.map((opt) => (
+                      <option key={opt} value={opt} />
+                    ))}
+                  </datalist>
                 </div>
                 <div className="col-md-3">
                   <label className="form-label fw-semibold">Cheque NO</label>
@@ -232,7 +319,6 @@ export default function AddAccountsData() {
                     checked={status}
                     onChange={(e) => setStatus(e.target.checked)}
                   />
-                  <span className="ms-2">{status ? "Active" : "Inactive"}</span>
                 </div>
               </div>
               <div className="mb-3">
@@ -256,7 +342,9 @@ export default function AddAccountsData() {
                 <button
                   type="button"
                   className="btn btn-dark px-4"
-                  onClick={() => navigate("/customer-payment")}
+                  onClick={() =>
+                    navigate(isVendor ? "/vendor-payment" : "/customer-payment")
+                  }
                 >
                   Back
                 </button>

@@ -104,7 +104,7 @@ export default function DataTable({
             </tr>
           ) : (
             pageData.map((row, i) => (
-              <tr key={row.code}>
+              <tr key={row.id}>
                 <td>{startIdx + i + 1}</td>
                 {columns.map((col) => (
                   <td key={col.field}>
