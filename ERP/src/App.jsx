@@ -1,7 +1,7 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import UserLogin from "./pages/UserLogin";
 import Home from "./pages/Home";
-import AddData from "./pages/Academics/AddData.jsx";
+import AddData from "./pages/AddData.jsx";
 import AcademicSubject from "./pages/Academics/AcademicSubject.jsx";
 import ProgramType from "./pages/Academics/ProgramType.jsx";
 import { AuthProvider } from "./context/AuthContext";
@@ -16,6 +16,7 @@ import AcademicSection from "./pages/Academics/AcademicSection.jsx";
 import CustomerPayment from "./pages/CustomerPayment";
 import VendorPayment from "./pages/VendorPayment.jsx";
 import AddAccountsData from "./pages/AddAccountsData.jsx";
+import AccountGroup from "./pages/AccountGroup.jsx";
 seedTestUser();
 
 const router = createBrowserRouter([
@@ -365,6 +366,54 @@ const router = createBrowserRouter([
   },
   {
     path: "/editacademicsection/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/account-group",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AccountGroup />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addaccountgroup",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editaccountgroup/:id",
     element: (
       <ProtectedRoute>
         <div>

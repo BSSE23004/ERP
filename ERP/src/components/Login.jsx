@@ -9,6 +9,7 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -55,7 +56,7 @@ const Login = () => {
           </label>
           <div className="input-group" id="show_hide_password">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               className="form-control border-end-0"
               id="userpassword"
               name="userpassword"
@@ -63,8 +64,12 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <span className="input-group-text bg-transparent">
-              <i className="bx bx-hide"></i>
+            <span
+              className="input-group-text bg-transparent"
+              style={{ cursor: "pointer" }}
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              <i className={`bx ${showPassword ? "bx-show" : "bx-hide"}`}></i>
             </span>
           </div>
           <span className="text-danger"></span>

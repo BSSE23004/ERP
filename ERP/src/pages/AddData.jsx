@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 // Removed subjects.json import
-import Sidebar from "../../components/Sidebar";
-import AppNavbar from "../../components/Navbar";
+import Sidebar from "../components/Sidebar";
+import AppNavbar from "../components/Navbar";
 
 export default function AddData() {
   const navigate = useNavigate();
@@ -14,20 +14,22 @@ export default function AddData() {
   const isAcademicProgram = location.pathname.includes("academicprogram");
   const isAcademicClass = location.pathname.includes("academicclass");
   const isAcademicSection = location.pathname.includes("academicsection");
+  const isAccountGroup = location.pathname.includes("accountgroup");
   let LOCAL_KEY = "academic_subjects";
   if (isProgramType) LOCAL_KEY = "program_types";
   if (isAcademicProgram) LOCAL_KEY = "academic_programs";
   if (isAcademicClass) LOCAL_KEY = "academic_classes";
   if (isAcademicSection) LOCAL_KEY = "academic_sections";
+  if (isAccountGroup) LOCAL_KEY = "account_groups";
 
   // Get current items from localStorage only
   const storedItems = localStorage.getItem(LOCAL_KEY);
   const initialItems = storedItems ? JSON.parse(storedItems) : [];
 
-  // If editing, find the item by code (id)
-  const editingItem = id ? initialItems.find((s) => s.code === id) : null;
+  // If editing, find the item by code for account group and other entities
+  const editingItem = id ? initialItems.find((item) => item.code === id) : null;
 
-  // Generate next code for new item
+  // Generate next code/id for new item
   const getNextCode = () => {
     if (!initialItems.length) {
       if (isProgramType) return "PT-0001";
@@ -36,7 +38,8 @@ export default function AddData() {
       if (isAcademicSection) return "SEC-0001";
       return "AS-0000001";
     }
-    const last = initialItems[initialItems.length - 1].code;
+    const last = initialItems[initialItems.length - 1]?.code;
+    if (!last) return "AS-0000001";
     const num = parseInt(last.split("-")[1], 10) + 1;
     if (isProgramType) return `PT-${num.toString().padStart(4, "0")}`;
     if (isAcademicProgram) return `AP-${num.toString().padStart(7, "0")}`;
@@ -105,7 +108,9 @@ export default function AddData() {
       updated = [...initialItems, newItem];
     }
     localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
-    if (isAcademicProgram) {
+    if (isAccountGroup) {
+      navigate("/account-group");
+    } else if (isAcademicProgram) {
       navigate("/academic-program");
     } else if (isProgramType) {
       navigate("/program-type");
@@ -130,7 +135,9 @@ export default function AddData() {
           <div className="bg-white rounded shadow-sm p-4">
             <h3 className="mb-4">
               {editingItem
-                ? isAcademicProgram
+                ? isAccountGroup
+                  ? "Edit Account Group"
+                  : isAcademicProgram
                   ? "Edit Academic Program"
                   : isProgramType
                   ? "Edit Program Type"
@@ -139,6 +146,8 @@ export default function AddData() {
                   : isAcademicSection
                   ? "Edit Academic Section"
                   : "Edit Academic Subject"
+                : isAccountGroup
+                ? "Create New Account Group"
                 : isAcademicProgram
                 ? "Create New Academic Program"
                 : isProgramType
@@ -150,75 +159,123 @@ export default function AddData() {
                 : "Create New Academic Subject"}
             </h3>
             <form onSubmit={handleSave}>
-              <div className="row mb-3">
-                <div className="col-md-6 mb-3 mb-md-0">
-                  <label className="form-label fw-semibold">Code*</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label fw-semibold">Name*</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-              {isAcademicProgram && (
-                <div className="row mb-3">
-                  <div className="col-md-6 mb-3 mb-md-0">
-                    <label className="form-label fw-semibold">
-                      Program Type*
-                    </label>
+              {isAccountGroup ? (
+                <>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">Name*</label>
                     <input
                       type="text"
                       className="form-control"
-                      value={programType}
-                      onChange={(e) => setProgramType(e.target.value)}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                       required
                     />
                   </div>
-                  <div className="col-md-6">
+                  <div className="mb-3">
                     <label className="form-label fw-semibold">
-                      Program Fee*
+                      Description
+                    </label>
+                    <textarea
+                      className="form-control"
+                      rows={4}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="form-label fw-semibold me-3">
+                      Status
                     </label>
                     <input
-                      type="number"
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={status}
+                      onChange={(e) => setStatus(e.target.checked)}
+                    />
+                    <span className="ms-2">
+                      {status ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="row mb-3">
+                    <div className="col-md-6 mb-3 mb-md-0">
+                      <label className="form-label fw-semibold">Code*</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold">Name*</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  {isAcademicProgram && (
+                    <div className="row mb-3">
+                      <div className="col-md-6 mb-3 mb-md-0">
+                        <label className="form-label fw-semibold">
+                          Program Type*
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={programType}
+                          onChange={(e) => setProgramType(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label fw-semibold">
+                          Program Fee*
+                        </label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={programFee}
+                          onChange={(e) => setProgramFee(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">
+                      Description
+                    </label>
+                    <textarea
                       className="form-control"
-                      value={programFee}
-                      onChange={(e) => setProgramFee(e.target.value)}
-                      required
+                      rows={4}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
                     />
                   </div>
-                </div>
+                  <div className="mb-4">
+                    <label className="form-label fw-semibold me-3">
+                      Status
+                    </label>
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={status}
+                      onChange={(e) => setStatus(e.target.checked)}
+                    />
+                    <span className="ms-2">
+                      {status ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                </>
               )}
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Description</label>
-                <textarea
-                  className="form-control"
-                  rows={4}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="form-label fw-semibold me-3">Status</label>
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  checked={status}
-                  onChange={(e) => setStatus(e.target.checked)}
-                />
-                <span className="ms-2">{status ? "Active" : "Inactive"}</span>
-              </div>
               {error && <div className="alert alert-danger py-2">{error}</div>}
               <div className="d-flex gap-2">
                 <button
@@ -227,11 +284,15 @@ export default function AddData() {
                   style={{ backgroundColor: "#ff6600" }}
                 >
                   {editingItem
-                    ? isAcademicProgram
+                    ? isAccountGroup
+                      ? "Update"
+                      : isAcademicProgram
                       ? "Update"
                       : isProgramType
                       ? "Update"
                       : "Update"
+                    : isAccountGroup
+                    ? "Save"
                     : isAcademicProgram
                     ? "Save"
                     : isProgramType
@@ -242,7 +303,9 @@ export default function AddData() {
                   type="button"
                   className="btn btn-dark px-4"
                   onClick={() => {
-                    if (isAcademicProgram) {
+                    if (isAccountGroup) {
+                      navigate("/account-group");
+                    } else if (isAcademicProgram) {
                       navigate("/academic-program");
                     } else if (isProgramType) {
                       navigate("/program-type");
