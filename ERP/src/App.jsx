@@ -17,6 +17,7 @@ import CustomerPayment from "./pages/CustomerPayment";
 import VendorPayment from "./pages/VendorPayment.jsx";
 import AddAccountsData from "./pages/AddAccountsData.jsx";
 import AccountGroup from "./pages/AccountGroup.jsx";
+import AccountNature from "./pages/AccountNature.jsx";
 seedTestUser();
 
 const router = createBrowserRouter([
@@ -414,6 +415,54 @@ const router = createBrowserRouter([
   },
   {
     path: "/editaccountgroup/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/account-nature",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AccountNature />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addaccountnature",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editaccountnature/:id",
     element: (
       <ProtectedRoute>
         <div>

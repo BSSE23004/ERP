@@ -9,24 +9,26 @@ export default function AddData() {
   const { id } = useParams();
   const location = useLocation();
 
-  // Determine context: subject, program type, academic program, academic class, or academic section
+  // Determine context: subject, program type, academic program, academic class, academic section, account group, or account nature
   const isProgramType = location.pathname.includes("programtype");
   const isAcademicProgram = location.pathname.includes("academicprogram");
   const isAcademicClass = location.pathname.includes("academicclass");
   const isAcademicSection = location.pathname.includes("academicsection");
   const isAccountGroup = location.pathname.includes("accountgroup");
+  const isAccountNature = location.pathname.includes("accountnature");
   let LOCAL_KEY = "academic_subjects";
   if (isProgramType) LOCAL_KEY = "program_types";
   if (isAcademicProgram) LOCAL_KEY = "academic_programs";
   if (isAcademicClass) LOCAL_KEY = "academic_classes";
   if (isAcademicSection) LOCAL_KEY = "academic_sections";
   if (isAccountGroup) LOCAL_KEY = "account_groups";
+  if (isAccountNature) LOCAL_KEY = "account_nature";
 
   // Get current items from localStorage only
   const storedItems = localStorage.getItem(LOCAL_KEY);
   const initialItems = storedItems ? JSON.parse(storedItems) : [];
 
-  // If editing, find the item by code for account group and other entities
+  // If editing, find the item by code for account nature, account group, and other entities
   const editingItem = id ? initialItems.find((item) => item.code === id) : null;
 
   // Generate next code/id for new item
@@ -108,7 +110,9 @@ export default function AddData() {
       updated = [...initialItems, newItem];
     }
     localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
-    if (isAccountGroup) {
+    if (isAccountNature) {
+      navigate("/account-nature");
+    } else if (isAccountGroup) {
       navigate("/account-group");
     } else if (isAcademicProgram) {
       navigate("/academic-program");
@@ -135,7 +139,9 @@ export default function AddData() {
           <div className="bg-white rounded shadow-sm p-4">
             <h3 className="mb-4">
               {editingItem
-                ? isAccountGroup
+                ? isAccountNature
+                  ? "Edit Account Nature"
+                  : isAccountGroup
                   ? "Edit Account Group"
                   : isAcademicProgram
                   ? "Edit Academic Program"
@@ -146,6 +152,8 @@ export default function AddData() {
                   : isAcademicSection
                   ? "Edit Academic Section"
                   : "Edit Academic Subject"
+                : isAccountNature
+                ? "Create New Account Nature"
                 : isAccountGroup
                 ? "Create New Account Group"
                 : isAcademicProgram
@@ -159,7 +167,7 @@ export default function AddData() {
                 : "Create New Academic Subject"}
             </h3>
             <form onSubmit={handleSave}>
-              {isAccountGroup ? (
+              {isAccountGroup || isAccountNature ? (
                 <>
                   <div className="mb-3">
                     <label className="form-label fw-semibold">Name*</label>
@@ -303,7 +311,9 @@ export default function AddData() {
                   type="button"
                   className="btn btn-dark px-4"
                   onClick={() => {
-                    if (isAccountGroup) {
+                    if (isAccountNature) {
+                      navigate("/account-nature");
+                    } else if (isAccountGroup) {
                       navigate("/account-group");
                     } else if (isAcademicProgram) {
                       navigate("/academic-program");
