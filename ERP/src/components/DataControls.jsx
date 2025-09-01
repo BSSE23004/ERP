@@ -57,8 +57,7 @@ export default function DataControls({
       )
       .join("");
     printWindow.document.write(`
-      <html><head><title>Print ${title}</title></head><body>
-      <h2>${title}</h2>
+      <html><body>
       <table border="1" cellpadding="5" cellspacing="0">
         <thead><tr>${columns
           .map((col) => `<th>${col.header}</th>`)

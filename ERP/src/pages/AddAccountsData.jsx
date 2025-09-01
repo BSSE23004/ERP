@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import AppNavbar from "../components/Navbar";
@@ -19,18 +19,47 @@ const vendorOptions = ["ABC Suppliers", "N STARS", "test vendor smart pos"];
 const bankOptions = ["Habib Bank", "Meezan Bank", "UBL", "MCB"];
 const branchOptions = ["Ibrahim Sattar", "Main Branch", "North Branch"];
 
+// Chart of Account datalist options from localStorage
+const getAccountNatureOptions = () => {
+  const stored = localStorage.getItem("account_nature");
+  return stored ? JSON.parse(stored).map((n) => n.name) : [];
+};
+const getAccountGroupOptions = () => {
+  const stored = localStorage.getItem("account_groups");
+  return stored ? JSON.parse(stored).map((g) => g.name) : [];
+};
+const getParentAccountOptions = () => {
+  const stored = localStorage.getItem("chart_of_account");
+  return stored ? JSON.parse(stored).map((a) => a.name) : [];
+};
+
 export default function AddAccountsData() {
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
   const isVendor = location.pathname.includes("vendor");
-  const LOCAL_KEY = isVendor ? "vendor_payments" : "customer_payments";
+  const isCustomer = location.pathname.includes("customer");
+  const isChart =
+    location.pathname.includes("addchartofaccount") ||
+    location.pathname.includes("editchartofaccount");
+  const LOCAL_KEY = isChart
+    ? "chart_of_account"
+    : isVendor
+    ? "vendor_payments"
+    : "customer_payments";
   // Vendor Payment fields
   const [grn, setGrn] = useState("");
   const [vendor, setVendor] = useState("");
   // Customer Payment fields
   const [bill, setBill] = useState("");
   const [customer, setCustomer] = useState("");
+  // Chart of Account fields
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
+  const [parentAccount, setParentAccount] = useState("");
+  const [accountNature, setAccountNature] = useState("");
+  const [accountGroup, setAccountGroup] = useState("");
+  const [openingBalance, setOpeningBalance] = useState("");
   // Shared fields
   const [paymentType, setPaymentType] = useState(paymentTypeOptions[3]);
   const [paymentDate, setPaymentDate] = useState("");
@@ -45,73 +74,124 @@ export default function AddAccountsData() {
   const [error, setError] = useState("");
 
   // Load payment for edit or generate next code for add
-  React.useEffect(() => {
+  useEffect(() => {
     const stored = localStorage.getItem(LOCAL_KEY);
     const items = stored ? JSON.parse(stored) : [];
     if (id) {
-      // Edit mode
-      const payment = items.find((p) => p.id === id);
-      if (payment) {
-        if (isVendor) {
-          setGrn(payment.grn || "");
-          setVendor(payment.vendor || "");
-        } else {
-          setBill(payment.bill || "");
-          setCustomer(payment.customer || "");
+      if (isChart) {
+        const account = items.find((a) => a.code === id);
+        if (account) {
+          setCode(account.code || "");
+          setName(account.name || "");
+          setParentAccount(account.parentAccount || "");
+          setAccountNature(account.accountNature || "");
+          setAccountGroup(account.accountGroup || "");
+          setOpeningBalance(account.openingBalance || "");
+          setStatus(account.status === "Active");
         }
-        setPaymentType(payment.paymentType || paymentTypeOptions[3]);
-        setPaymentDate(payment.paymentDate || "");
-        setBank(payment.bank || "");
-        setBranch(payment.branch || "");
-        setChequeNo(payment.chequeNo || "");
-        setChequeDate(payment.chequeDate || "");
-        setChequeCashDate(payment.chequeCashDate || "");
-        setAmount(payment.amount || "");
-        setPaymentNote(payment.paymentNote || "");
-        setStatus(payment.status === "Active");
+      } else {
+        // Payment logic
+        const payment = items.find((p) => p.code === id);
+        if (payment) {
+          if (isVendor) {
+            setGrn(payment.grn || "");
+            setVendor(payment.vendor || "");
+          } else {
+            setBill(payment.bill || "");
+            setCustomer(payment.customer || "");
+          }
+          setPaymentType(payment.paymentType || paymentTypeOptions[3]);
+          setPaymentDate(payment.paymentDate || "");
+          setBank(payment.bank || "");
+          setBranch(payment.branch || "");
+          setChequeNo(payment.chequeNo || "");
+          setChequeDate(payment.chequeDate || "");
+          setChequeCashDate(payment.chequeCashDate || "");
+          setAmount(payment.amount || "");
+          setPaymentNote(payment.paymentNote || "");
+          setStatus(payment.status === "Active");
+        }
+      }
+    } else if (isChart) {
+      // Generate next code for Chart of Account
+      if (!items.length) {
+        setCode("COA-0001");
+      } else {
+        const last = items[items.length - 1]?.code;
+        if (last) {
+          const num = parseInt(last.split("-")[1]) + 1;
+          setCode(`COA-${num.toString().padStart(4, "0")}`);
+        } else {
+          setCode("COA-0001");
+        }
       }
     }
-  }, [id]);
+  }, [id, isChart]);
 
   const handleSave = (e) => {
     e.preventDefault();
-    if (isVendor) {
-      if (!vendor || !paymentType || !paymentDate || !amount) {
+    if (isChart) {
+      if (!code || !name || !accountNature || !accountGroup) {
         setError("Please fill all required fields");
         return;
       }
-    } else {
-      if (!customer || !paymentType || !paymentDate || !amount) {
-        setError("Please fill all required fields");
-        return;
+      const stored = localStorage.getItem(LOCAL_KEY);
+      const items = stored ? JSON.parse(stored) : [];
+      const newItem = {
+        code,
+        name,
+        parentAccount,
+        accountNature,
+        accountGroup,
+        openingBalance,
+        status: status ? "Active" : "Inactive",
+      };
+      let updatedItems;
+      if (id) {
+        updatedItems = items.map((a) => (a.code === id ? newItem : a));
+      } else {
+        updatedItems = [...items, newItem];
       }
-    }
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    const newItem = {
-      id: id || Date.now().toString(),
-      paymentType,
-      paymentDate,
-      bank,
-      branch,
-      chequeNo,
-      chequeDate,
-      chequeCashDate,
-      amount,
-      paymentNote,
-      status: status ? "Active" : "Inactive",
-      ...(isVendor ? { grn, vendor } : { bill, customer }),
-    };
-    let updatedItems;
-    if (id) {
-      // Edit mode: update existing
-      updatedItems = items.map((p) => (p.id === id ? newItem : p));
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
+      navigate("/chart-of-account");
     } else {
-      // Add mode: add new
-      updatedItems = [...items, newItem];
+      // Payment logic
+      if (isVendor) {
+        if (!vendor || !paymentType || !paymentDate || !amount) {
+          setError("Please fill all required fields");
+          return;
+        }
+      } else {
+        if (!customer || !paymentType || !paymentDate || !amount) {
+          setError("Please fill all required fields");
+          return;
+        }
+      }
+      const stored = localStorage.getItem(LOCAL_KEY);
+      const items = stored ? JSON.parse(stored) : [];
+      const newItem = {
+        id: id || Date.now().toString(),
+        paymentType,
+        paymentDate,
+        bank,
+        branch,
+        chequeNo,
+        chequeDate,
+        chequeCashDate,
+        amount,
+        paymentNote,
+        status: status ? "Active" : "Inactive",
+        ...(isVendor ? { grn, vendor } : { bill, customer }),
+      };
+      let updatedItems;
+      if (id) {
+        updatedItems = items.map((p) => (p.id === id ? newItem : p));
+      } else {
+        updatedItems = [...items, newItem];
+      }
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
+      navigate(isVendor ? "/vendor-payment" : "/customer-payment");
     }
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
-    navigate(isVendor ? "/vendor-payment" : "/customer-payment");
   };
 
   return (
@@ -125,7 +205,11 @@ export default function AddAccountsData() {
         <div style={{ flex: 1, padding: "2rem 2rem 0 2rem", marginTop: 50 }}>
           <div className="bg-white rounded shadow-sm p-4">
             <h3 className="mb-4">
-              {id
+              {isChart
+                ? id
+                  ? "Edit Chart of Account"
+                  : "Create New Chart of Account"
+                : id
                 ? isVendor
                   ? "Edit Vendor Payment"
                   : "Edit Customer Payment"
@@ -134,202 +218,316 @@ export default function AddAccountsData() {
                 : "Create New Customer Payment"}
             </h3>
             <form onSubmit={handleSave}>
-              <div className="row mb-3">
-                {isVendor ? (
-                  <>
+              {isChart ? (
+                <>
+                  <div className="row mb-3">
                     <div className="col-md-3 mb-3 mb-md-0">
-                      <label className="form-label fw-semibold">GRN</label>
+                      <label className="form-label fw-semibold">Code*</label>
                       <input
+                        type="text"
                         className="form-control"
-                        list="grn-list"
-                        value={grn}
-                        onChange={(e) => setGrn(e.target.value)}
-                        placeholder="Select or type GRN"
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        required
+                        disabled={!!id}
                       />
-                      <datalist id="grn-list">
-                        {grnOptions.map((opt) => (
-                          <option key={opt} value={opt} />
-                        ))}
-                      </datalist>
                     </div>
                     <div className="col-md-3">
-                      <label className="form-label fw-semibold">Vendor*</label>
+                      <label className="form-label fw-semibold">Name*</label>
                       <input
+                        type="text"
                         className="form-control"
-                        list="vendor-list"
-                        value={vendor}
-                        onChange={(e) => setVendor(e.target.value)}
-                        placeholder="Select or type Vendor"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                         required
                       />
-                      <datalist id="vendor-list">
-                        {vendorOptions.map((opt) => (
-                          <option key={opt} value={opt} />
-                        ))}
-                      </datalist>
                     </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="col-md-3 mb-3 mb-md-0">
+                    <div className="col-md-3">
                       <label className="form-label fw-semibold">
-                        Bill/Invoice No
+                        Parent Account
                       </label>
                       <input
                         className="form-control"
-                        list="bill-list"
-                        value={bill}
-                        onChange={(e) => setBill(e.target.value)}
-                        placeholder="Select or type Bill/Invoice No"
+                        list="parent-account-list"
+                        value={parentAccount}
+                        onChange={(e) => setParentAccount(e.target.value)}
+                        placeholder="Select or type Parent Account"
                       />
-                      <datalist id="bill-list">
-                        {billOptions.map((opt) => (
+                      <datalist id="parent-account-list">
+                        {getParentAccountOptions().map((opt) => (
                           <option key={opt} value={opt} />
                         ))}
                       </datalist>
                     </div>
                     <div className="col-md-3">
                       <label className="form-label fw-semibold">
-                        Customer*
+                        Account Nature*
                       </label>
                       <input
                         className="form-control"
-                        list="customer-list"
-                        value={customer}
-                        onChange={(e) => setCustomer(e.target.value)}
-                        placeholder="Select or type Customer"
+                        list="account-nature-list"
+                        value={accountNature}
+                        onChange={(e) => setAccountNature(e.target.value)}
+                        placeholder="Select or type Account Nature"
                         required
                       />
-                      <datalist id="customer-list">
-                        {customerOptions.map((opt) => (
+                      <datalist id="account-nature-list">
+                        {getAccountNatureOptions().map((opt) => (
                           <option key={opt} value={opt} />
                         ))}
                       </datalist>
                     </div>
-                  </>
-                )}
-                <div className="col-md-3">
-                  <label className="form-label fw-semibold">
-                    Payment Type*
-                  </label>
-                  <input
-                    className="form-control"
-                    list="payment-type-list"
-                    value={paymentType}
-                    onChange={(e) => setPaymentType(e.target.value)}
-                    placeholder="Select or type Payment Type"
-                    required
-                  />
-                  <datalist id="payment-type-list">
-                    {paymentTypeOptions.map((opt) => (
-                      <option key={opt} value={opt} />
-                    ))}
-                  </datalist>
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label fw-semibold">
-                    Payment Date*
-                  </label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={paymentDate}
-                    onChange={(e) => setPaymentDate(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="row mb-3">
-                <div className="col-md-3 mb-3 mb-md-0">
-                  <label className="form-label fw-semibold">Bank</label>
-                  <input
-                    className="form-control"
-                    list="bank-list"
-                    value={bank}
-                    onChange={(e) => setBank(e.target.value)}
-                    placeholder="Select or type Bank"
-                  />
-                  <datalist id="bank-list">
-                    {bankOptions.map((opt) => (
-                      <option key={opt} value={opt} />
-                    ))}
-                  </datalist>
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label fw-semibold">Branch</label>
-                  <input
-                    className="form-control"
-                    list="branch-list"
-                    value={branch}
-                    onChange={(e) => setBranch(e.target.value)}
-                    placeholder="Select or type Branch"
-                  />
-                  <datalist id="branch-list">
-                    {branchOptions.map((opt) => (
-                      <option key={opt} value={opt} />
-                    ))}
-                  </datalist>
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label fw-semibold">Cheque NO</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={chequeNo}
-                    onChange={(e) => setChequeNo(e.target.value)}
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label fw-semibold">Cheque Date</label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={chequeDate}
-                    onChange={(e) => setChequeDate(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="row mb-3">
-                <div className="col-md-3 mb-3 mb-md-0">
-                  <label className="form-label fw-semibold">
-                    Cheque Cash Date
-                  </label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={chequeCashDate}
-                    onChange={(e) => setChequeCashDate(e.target.value)}
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label fw-semibold">Amount*</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label fw-semibold">Status</label>
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    checked={status}
-                    onChange={(e) => setStatus(e.target.checked)}
-                  />
-                </div>
-              </div>
-              <div className="mb-3">
-                <label className="form-label fw-semibold">Payment Note</label>
-                <textarea
-                  className="form-control"
-                  rows={3}
-                  value={paymentNote}
-                  onChange={(e) => setPaymentNote(e.target.value)}
-                />
-              </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-md-3 mb-3 mb-md-0">
+                      <label className="form-label fw-semibold">
+                        Account Group*
+                      </label>
+                      <input
+                        className="form-control"
+                        list="account-group-list"
+                        value={accountGroup}
+                        onChange={(e) => setAccountGroup(e.target.value)}
+                        placeholder="Select or type Account Group"
+                        required
+                      />
+                      <datalist id="account-group-list">
+                        {getAccountGroupOptions().map((opt) => (
+                          <option key={opt} value={opt} />
+                        ))}
+                      </datalist>
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">
+                        Opening Balance
+                      </label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={openingBalance}
+                        onChange={(e) => setOpeningBalance(e.target.value)}
+                        placeholder="Enter Opening Balance"
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">Status</label>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={status}
+                        onChange={(e) => setStatus(e.target.checked)}
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="row mb-3">
+                    {isVendor ? (
+                      <>
+                        <div className="col-md-3 mb-3 mb-md-0">
+                          <label className="form-label fw-semibold">GRN</label>
+                          <input
+                            className="form-control"
+                            list="grn-list"
+                            value={grn}
+                            onChange={(e) => setGrn(e.target.value)}
+                            placeholder="Select or type GRN"
+                          />
+                          <datalist id="grn-list">
+                            {grnOptions.map((opt) => (
+                              <option key={opt} value={opt} />
+                            ))}
+                          </datalist>
+                        </div>
+                        <div className="col-md-3">
+                          <label className="form-label fw-semibold">
+                            Vendor*
+                          </label>
+                          <input
+                            className="form-control"
+                            list="vendor-list"
+                            value={vendor}
+                            onChange={(e) => setVendor(e.target.value)}
+                            placeholder="Select or type Vendor"
+                            required
+                          />
+                          <datalist id="vendor-list">
+                            {vendorOptions.map((opt) => (
+                              <option key={opt} value={opt} />
+                            ))}
+                          </datalist>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="col-md-3 mb-3 mb-md-0">
+                          <label className="form-label fw-semibold">
+                            Bill/Invoice No
+                          </label>
+                          <input
+                            className="form-control"
+                            list="bill-list"
+                            value={bill}
+                            onChange={(e) => setBill(e.target.value)}
+                            placeholder="Select or type Bill/Invoice No"
+                          />
+                          <datalist id="bill-list">
+                            {billOptions.map((opt) => (
+                              <option key={opt} value={opt} />
+                            ))}
+                          </datalist>
+                        </div>
+                        <div className="col-md-3">
+                          <label className="form-label fw-semibold">
+                            Customer*
+                          </label>
+                          <input
+                            className="form-control"
+                            list="customer-list"
+                            value={customer}
+                            onChange={(e) => setCustomer(e.target.value)}
+                            placeholder="Select or type Customer"
+                            required
+                          />
+                          <datalist id="customer-list">
+                            {customerOptions.map((opt) => (
+                              <option key={opt} value={opt} />
+                            ))}
+                          </datalist>
+                        </div>
+                      </>
+                    )}
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">
+                        Payment Type*
+                      </label>
+                      <input
+                        className="form-control"
+                        list="payment-type-list"
+                        value={paymentType}
+                        onChange={(e) => setPaymentType(e.target.value)}
+                        placeholder="Select or type Payment Type"
+                        required
+                      />
+                      <datalist id="payment-type-list">
+                        {paymentTypeOptions.map((opt) => (
+                          <option key={opt} value={opt} />
+                        ))}
+                      </datalist>
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">
+                        Payment Date*
+                      </label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={paymentDate}
+                        onChange={(e) => setPaymentDate(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-md-3 mb-3 mb-md-0">
+                      <label className="form-label fw-semibold">Bank</label>
+                      <input
+                        className="form-control"
+                        list="bank-list"
+                        value={bank}
+                        onChange={(e) => setBank(e.target.value)}
+                        placeholder="Select or type Bank"
+                      />
+                      <datalist id="bank-list">
+                        {bankOptions.map((opt) => (
+                          <option key={opt} value={opt} />
+                        ))}
+                      </datalist>
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">Branch</label>
+                      <input
+                        className="form-control"
+                        list="branch-list"
+                        value={branch}
+                        onChange={(e) => setBranch(e.target.value)}
+                        placeholder="Select or type Branch"
+                      />
+                      <datalist id="branch-list">
+                        {branchOptions.map((opt) => (
+                          <option key={opt} value={opt} />
+                        ))}
+                      </datalist>
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">
+                        Cheque NO
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={chequeNo}
+                        onChange={(e) => setChequeNo(e.target.value)}
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">
+                        Cheque Date
+                      </label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={chequeDate}
+                        onChange={(e) => setChequeDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-md-3 mb-3 mb-md-0">
+                      <label className="form-label fw-semibold">
+                        Cheque Cash Date
+                      </label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={chequeCashDate}
+                        onChange={(e) => setChequeCashDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">Amount*</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">Status</label>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={status}
+                        onChange={(e) => setStatus(e.target.checked)}
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">
+                      Payment Note
+                    </label>
+                    <textarea
+                      className="form-control"
+                      rows={3}
+                      value={paymentNote}
+                      onChange={(e) => setPaymentNote(e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
               {error && <div className="alert alert-danger py-2">{error}</div>}
               <div className="d-flex gap-2">
                 <button
@@ -343,7 +541,11 @@ export default function AddAccountsData() {
                   type="button"
                   className="btn btn-dark px-4"
                   onClick={() =>
-                    navigate(isVendor ? "/vendor-payment" : "/customer-payment")
+                    isChart
+                      ? navigate("/chart-of-account")
+                      : navigate(
+                          isVendor ? "/vendor-payment" : "/customer-payment"
+                        )
                   }
                 >
                   Back

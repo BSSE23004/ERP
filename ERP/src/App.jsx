@@ -18,6 +18,7 @@ import VendorPayment from "./pages/VendorPayment.jsx";
 import AddAccountsData from "./pages/AddAccountsData.jsx";
 import AccountGroup from "./pages/AccountGroup.jsx";
 import AccountNature from "./pages/AccountNature.jsx";
+import ChartOfAccount from "./pages/ChartOfAccount.jsx";
 seedTestUser();
 
 const router = createBrowserRouter([
@@ -471,6 +472,54 @@ const router = createBrowserRouter([
             <Sidebar />
             <div className="flex-grow-1">
               <AddData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/chart-of-account",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <ChartOfAccount />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addchartofaccount",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editchartofaccount/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
             </div>
           </div>
         </div>
