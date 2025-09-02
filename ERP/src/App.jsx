@@ -19,9 +19,58 @@ import AddAccountsData from "./pages/AddAccountsData.jsx";
 import AccountGroup from "./pages/AccountGroup.jsx";
 import AccountNature from "./pages/AccountNature.jsx";
 import ChartOfAccount from "./pages/ChartOfAccount.jsx";
+import JournalVoucher from "./pages/JournalVoucher.jsx";
 seedTestUser();
 
 const router = createBrowserRouter([
+  {
+    path: "/journal-voucher",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <JournalVoucher />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addjournalvoucher",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editjournalvoucher/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
   {
     path: "/vendor-payment",
     element: (
