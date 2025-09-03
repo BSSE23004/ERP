@@ -39,6 +39,7 @@ export default function AddAccountsData() {
   const location = useLocation();
   const isVendor = location.pathname.includes("vendor");
   const isCustomer = location.pathname.includes("customer");
+  const isEmployee = location.pathname.includes("employee");
   const isChart =
     location.pathname.includes("addchartofaccount") ||
     location.pathname.includes("editchartofaccount");
@@ -51,7 +52,11 @@ export default function AddAccountsData() {
     ? "journal_vouchers"
     : isVendor
     ? "vendor_payments"
-    : "customer_payments";
+    : isCustomer
+    ? "customer_payments"
+    : isEmployee
+    ? "employee_payments"
+    : "";
   // Journal Voucher fields
   const [bookingDate, setBookingDate] = useState("");
   const [voucherNo, setVoucherNo] = useState("");
@@ -62,6 +67,9 @@ export default function AddAccountsData() {
   // Customer Payment fields
   const [bill, setBill] = useState("");
   const [customer, setCustomer] = useState("");
+  // Employee Payment fields
+  const [employee, setEmployee] = useState("");
+  const employeeOptions = ["Employee A", "Employee B", "Employee C"];
   // Chart of Account fields
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
@@ -108,14 +116,16 @@ export default function AddAccountsData() {
         }
       } else {
         // Payment logic
-        const payment = items.find((p) => p.code === id);
+        const payment = items.find((p) => p.id === id);
         if (payment) {
           if (isVendor) {
             setGrn(payment.grn || "");
             setVendor(payment.vendor || "");
-          } else {
+          } else if (isCustomer) {
             setBill(payment.bill || "");
             setCustomer(payment.customer || "");
+          } else if (isEmployee) {
+            setEmployee(payment.employee || "");
           }
           setPaymentType(payment.paymentType || paymentTypeOptions[3]);
           setPaymentDate(payment.paymentDate || "");
@@ -207,8 +217,13 @@ export default function AddAccountsData() {
           setError("Please fill all required fields");
           return;
         }
-      } else {
+      } else if (isCustomer) {
         if (!customer || !paymentType || !paymentDate || !amount) {
+          setError("Please fill all required fields");
+          return;
+        }
+      } else if (isEmployee) {
+        if (!employee || !paymentType || !paymentDate || !amount) {
           setError("Please fill all required fields");
           return;
         }
@@ -227,7 +242,13 @@ export default function AddAccountsData() {
         amount,
         paymentNote,
         status: status ? "Active" : "Inactive",
-        ...(isVendor ? { grn, vendor } : { bill, customer }),
+        ...(isVendor
+          ? { grn, vendor }
+          : isCustomer
+          ? { bill, customer }
+          : isEmployee
+          ? { employee }
+          : {}),
       };
       let updatedItems;
       if (id) {
@@ -236,7 +257,15 @@ export default function AddAccountsData() {
         updatedItems = [...items, newItem];
       }
       localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
-      navigate(isVendor ? "/vendor-payment" : "/customer-payment");
+      navigate(
+        isVendor
+          ? "/vendor-payment"
+          : isCustomer
+          ? "/customer-payment"
+          : isEmployee
+          ? "/employee-payment"
+          : "/"
+      );
     }
   };
 
@@ -259,13 +288,19 @@ export default function AddAccountsData() {
                 ? id
                   ? "Edit Chart of Account"
                   : "Create New Chart of Account"
-                : id
-                ? isVendor
-                  ? "Edit Vendor Payment"
-                  : "Edit Customer Payment"
                 : isVendor
-                ? "Create New Vendor Payment"
-                : "Create New Customer Payment"}
+                ? id
+                  ? "Edit Vendor Payment"
+                  : "Create New Vendor Payment"
+                : isCustomer
+                ? id
+                  ? "Edit Customer Payment"
+                  : "Create New Customer Payment"
+                : isEmployee
+                ? id
+                  ? "Edit Employee Payment"
+                  : "Create New Employee Payment"
+                : ""}
             </h3>
             <form onSubmit={handleSave}>
               {isJournal ? (
@@ -422,7 +457,7 @@ export default function AddAccountsData() {
                     </div>
                   </div>
                 </>
-              ) : (
+              ) : isVendor || isCustomer || isEmployee ? (
                 <>
                   <div className="row mb-3">
                     {isVendor ? (
@@ -461,7 +496,7 @@ export default function AddAccountsData() {
                           </datalist>
                         </div>
                       </>
-                    ) : (
+                    ) : isCustomer ? (
                       <>
                         <div className="col-md-3 mb-3 mb-md-0">
                           <label className="form-label fw-semibold">
@@ -499,7 +534,28 @@ export default function AddAccountsData() {
                           </datalist>
                         </div>
                       </>
-                    )}
+                    ) : isEmployee ? (
+                      <>
+                        <div className="col-md-3 mb-3 mb-md-0">
+                          <label className="form-label fw-semibold">
+                            Employee*
+                          </label>
+                          <input
+                            className="form-control"
+                            list="employee-list"
+                            value={employee}
+                            onChange={(e) => setEmployee(e.target.value)}
+                            placeholder="Select or type Employee"
+                            required
+                          />
+                          <datalist id="employee-list">
+                            {employeeOptions.map((opt) => (
+                              <option key={opt} value={opt} />
+                            ))}
+                          </datalist>
+                        </div>
+                      </>
+                    ) : null}
                     <div className="col-md-3">
                       <label className="form-label fw-semibold">
                         Payment Type*
@@ -629,7 +685,7 @@ export default function AddAccountsData() {
                     />
                   </div>
                 </>
-              )}
+              ) : null}
               {error && <div className="alert alert-danger py-2">{error}</div>}
               <div className="d-flex gap-2">
                 <button

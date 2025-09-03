@@ -1,3 +1,4 @@
+import EmployeePayment from "./pages/EmployeePayment.jsx";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import UserLogin from "./pages/UserLogin";
 import Home from "./pages/Home";
@@ -23,6 +24,54 @@ import JournalVoucher from "./pages/JournalVoucher.jsx";
 seedTestUser();
 
 const router = createBrowserRouter([
+  {
+    path: "/employee-payment",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <EmployeePayment />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addemployeepayment",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editemployeepayment/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
   {
     path: "/journal-voucher",
     element: (
