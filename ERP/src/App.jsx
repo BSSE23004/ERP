@@ -21,6 +21,7 @@ import AccountGroup from "./pages/AccountGroup.jsx";
 import AccountNature from "./pages/AccountNature.jsx";
 import ChartOfAccount from "./pages/ChartOfAccount.jsx";
 import JournalVoucher from "./pages/JournalVoucher.jsx";
+import LedgerEntries from "./pages/LedgerEntries.jsx";
 seedTestUser();
 
 const router = createBrowserRouter([
@@ -610,6 +611,54 @@ const router = createBrowserRouter([
   },
   {
     path: "/editchartofaccount/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/ledger-entries",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <LedgerEntries />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addledgerentry",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editledgerentry/:id",
     element: (
       <ProtectedRoute>
         <div>

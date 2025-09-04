@@ -27,8 +27,13 @@ export default function DataTable({
     sortedData.sort((a, b) => {
       let aVal = a[sortBy] ?? "";
       let bVal = b[sortBy] ?? "";
-      // Numeric sort for amount
-      if (sortBy === "amount" || sortBy === "programFee") {
+      // Numeric sort for amount, totalCredit, totalDebit
+      if (
+        sortBy === "amount" ||
+        sortBy === "programFee" ||
+        sortBy === "totalCredit" ||
+        sortBy === "totalDebit"
+      ) {
         aVal = Number(aVal) || 0;
         bVal = Number(bVal) || 0;
         return sortOrder === "asc" ? aVal - bVal : bVal - aVal;

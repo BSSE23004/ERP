@@ -30,7 +30,7 @@
       { "id": "chart-of-account", "label": "Chart of Account" },
       { "id": "journal-voucher", "label": "journal Voucher" },
       { "id": "employee-payment", "label": "Employee Payment" },
-      { "id": "ledger-enteries", "label": "Ledger Enteries" },
+      { "id": "ledger-entries", "label": "Ledger Enteries" },
       { "id": "cash-payment-voucher", "label": "Cash Payment Voucher" },
       { "id": "cash-receipt-voucher", "label": "Cash Receipt Voucher" },
       { "id": "bank-payment-voucher", "label": "Bank Payment Voucher" },
