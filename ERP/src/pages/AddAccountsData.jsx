@@ -47,6 +47,7 @@ export default function AddAccountsData() {
     location.pathname.includes("addjournalvoucher") ||
     location.pathname.includes("editjournalvoucher");
   const isLedger = location.pathname.includes("ledgerentry");
+  const isCashPayment = location.pathname.includes("cashpaymentvoucher");
   const LOCAL_KEY = isChart
     ? "chart_of_account"
     : isJournal
@@ -59,6 +60,8 @@ export default function AddAccountsData() {
     ? "employee_payments"
     : isLedger
     ? "ledger_entries"
+    : isCashPayment
+    ? "cash_payment_vouchers"
     : "";
   // Journal Voucher & Ledger Entry fields
   const [bookingDate, setBookingDate] = useState("");
@@ -83,6 +86,8 @@ export default function AddAccountsData() {
   // Ledger Entry fields
   const [totalDebit, setTotalDebit] = useState("");
   const [totalCredit, setTotalCredit] = useState("");
+  // Cash Payment Voucher fields
+  const [totalAmount, setTotalAmount] = useState("");
   // Shared fields
   const [paymentType, setPaymentType] = useState(paymentTypeOptions[3]);
   const [paymentDate, setPaymentDate] = useState("");
@@ -129,9 +134,23 @@ export default function AddAccountsData() {
           setTotalCredit(entry.totalCredit || "");
           setStatus(entry.status === "Active");
         }
+      } else if (isCashPayment) {
+        const voucher = items.find((v) => v.id === id);
+        if (voucher) {
+          setBookingDate(voucher.bookingDate || "");
+          setVoucherNo(voucher.voucherNo || "");
+          setDocumentNo(voucher.documentNo || "");
+          setTotalAmount(voucher.totalAmount || "");
+          setStatus(voucher.status === "Active");
+        }
       } else {
         // Payment logic
-        const payment = items.find((p) => p.id === id);
+        let payment;
+        if (isCustomer) {
+          payment = items.find((p) => p.code === id);
+        } else {
+          payment = items.find((p) => p.id === id);
+        }
         if (payment) {
           if (isVendor) {
             setGrn(payment.grn || "");
@@ -181,8 +200,14 @@ export default function AddAccountsData() {
       setTotalDebit("");
       setTotalCredit("");
       setStatus(true);
+    } else if (isCashPayment) {
+      setBookingDate("");
+      setVoucherNo("");
+      setDocumentNo("");
+      setTotalAmount("");
+      setStatus(true);
     }
-  }, [id, isChart, isJournal, isLedger]);
+  }, [id, isChart, isJournal, isLedger, isCashPayment]);
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -254,6 +279,30 @@ export default function AddAccountsData() {
       }
       localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
       navigate("/ledger-entries");
+      return;
+    } else if (isCashPayment) {
+      if (!bookingDate || !voucherNo || !documentNo || !totalAmount) {
+        setError("Please fill all required fields");
+        return;
+      }
+      const stored = localStorage.getItem(LOCAL_KEY);
+      const items = stored ? JSON.parse(stored) : [];
+      const newItem = {
+        id: id || Date.now().toString(),
+        bookingDate,
+        voucherNo,
+        documentNo,
+        totalAmount,
+        status: status ? "Active" : "Inactive",
+      };
+      let updatedItems;
+      if (id) {
+        updatedItems = items.map((v) => (v.id === id ? newItem : v));
+      } else {
+        updatedItems = [...items, newItem];
+      }
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
+      navigate("/cash-payment-voucher");
       return;
     } else {
       // Payment logic
@@ -349,6 +398,10 @@ export default function AddAccountsData() {
                 ? id
                   ? "Edit Ledger Entry"
                   : "Create New Ledger Entry"
+                : isCashPayment
+                ? id
+                  ? "Edit Cash Payment Voucher"
+                  : "Create New Cash Payment Voucher"
                 : ""}
             </h3>
             <form onSubmit={handleSave}>
@@ -554,6 +607,70 @@ export default function AddAccountsData() {
                         className="form-control"
                         value={totalCredit}
                         onChange={(e) => setTotalCredit(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="row mb-3">
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">Status</label>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={status}
+                        onChange={(e) => setStatus(e.target.checked)}
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : isCashPayment ? (
+                <>
+                  <div className="row mb-3">
+                    <div className="col-md-3 mb-3 mb-md-0">
+                      <label className="form-label fw-semibold">
+                        Booking Date*
+                      </label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={bookingDate}
+                        onChange={(e) => setBookingDate(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">
+                        Voucher No.*
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={voucherNo}
+                        onChange={(e) => setVoucherNo(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">
+                        Document No*
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={documentNo}
+                        onChange={(e) => setDocumentNo(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">
+                        Total Amount*
+                      </label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={totalAmount}
+                        onChange={(e) => setTotalAmount(e.target.value)}
                         required
                       />
                     </div>

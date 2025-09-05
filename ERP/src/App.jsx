@@ -22,6 +22,7 @@ import AccountNature from "./pages/AccountNature.jsx";
 import ChartOfAccount from "./pages/ChartOfAccount.jsx";
 import JournalVoucher from "./pages/JournalVoucher.jsx";
 import LedgerEntries from "./pages/LedgerEntries.jsx";
+import CashPaymentVoucher from "./pages/CashPaymentVoucher.jsx";
 seedTestUser();
 
 const router = createBrowserRouter([
@@ -659,6 +660,54 @@ const router = createBrowserRouter([
   },
   {
     path: "/editledgerentry/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/cash-payment-voucher",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <CashPaymentVoucher />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addcashpaymentvoucher",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editcashpaymentvoucher/:id",
     element: (
       <ProtectedRoute>
         <div>
