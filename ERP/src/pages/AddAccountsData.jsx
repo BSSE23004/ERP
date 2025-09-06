@@ -48,6 +48,7 @@ export default function AddAccountsData() {
     location.pathname.includes("editjournalvoucher");
   const isLedger = location.pathname.includes("ledgerentry");
   const isCashPayment = location.pathname.includes("cashpaymentvoucher");
+  const isCashReceipt = location.pathname.includes("cashreceiptvoucher");
   const LOCAL_KEY = isChart
     ? "chart_of_account"
     : isJournal
@@ -62,6 +63,8 @@ export default function AddAccountsData() {
     ? "ledger_entries"
     : isCashPayment
     ? "cash_payment_vouchers"
+    : isCashReceipt
+    ? "cash_receipt_vouchers"
     : "";
   // Journal Voucher & Ledger Entry fields
   const [bookingDate, setBookingDate] = useState("");
@@ -134,7 +137,7 @@ export default function AddAccountsData() {
           setTotalCredit(entry.totalCredit || "");
           setStatus(entry.status === "Active");
         }
-      } else if (isCashPayment) {
+      } else if (isCashPayment || isCashReceipt) {
         const voucher = items.find((v) => v.id === id);
         if (voucher) {
           setBookingDate(voucher.bookingDate || "");
@@ -200,7 +203,7 @@ export default function AddAccountsData() {
       setTotalDebit("");
       setTotalCredit("");
       setStatus(true);
-    } else if (isCashPayment) {
+    } else if (isCashPayment || isCashReceipt) {
       setBookingDate("");
       setVoucherNo("");
       setDocumentNo("");
@@ -280,7 +283,7 @@ export default function AddAccountsData() {
       localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
       navigate("/ledger-entries");
       return;
-    } else if (isCashPayment) {
+    } else if (isCashPayment || isCashReceipt) {
       if (!bookingDate || !voucherNo || !documentNo || !totalAmount) {
         setError("Please fill all required fields");
         return;
@@ -302,7 +305,9 @@ export default function AddAccountsData() {
         updatedItems = [...items, newItem];
       }
       localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
-      navigate("/cash-payment-voucher");
+      navigate(
+        isCashPayment ? "/cash-payment-voucher" : "/cash-receipt-voucher"
+      );
       return;
     } else {
       // Payment logic
@@ -402,6 +407,10 @@ export default function AddAccountsData() {
                 ? id
                   ? "Edit Cash Payment Voucher"
                   : "Create New Cash Payment Voucher"
+                : isCashReceipt
+                ? id
+                  ? "Edit Cash Receipt Voucher"
+                  : "Create New Cash Receipt Voucher"
                 : ""}
             </h3>
             <form onSubmit={handleSave}>
@@ -623,7 +632,7 @@ export default function AddAccountsData() {
                     </div>
                   </div>
                 </>
-              ) : isCashPayment ? (
+              ) : isCashPayment || isCashReceipt ? (
                 <>
                   <div className="row mb-3">
                     <div className="col-md-3 mb-3 mb-md-0">

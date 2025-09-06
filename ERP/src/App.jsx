@@ -23,9 +23,58 @@ import ChartOfAccount from "./pages/ChartOfAccount.jsx";
 import JournalVoucher from "./pages/JournalVoucher.jsx";
 import LedgerEntries from "./pages/LedgerEntries.jsx";
 import CashPaymentVoucher from "./pages/CashPaymentVoucher.jsx";
+import CashReceiptVoucher from "./pages/CashReceiptVoucher.jsx";
 seedTestUser();
 
 const router = createBrowserRouter([
+  {
+    path: "/addcashreceiptvoucher",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editcashreceiptvoucher/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/cash-receipt-voucher",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <CashReceiptVoucher />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
   {
     path: "/employee-payment",
     element: (
