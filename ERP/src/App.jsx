@@ -1,3 +1,4 @@
+import BankPaymentVoucher from "./pages/BankPaymentVoucher.jsx";
 import EmployeePayment from "./pages/EmployeePayment.jsx";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import UserLogin from "./pages/UserLogin";
@@ -27,6 +28,54 @@ import CashReceiptVoucher from "./pages/CashReceiptVoucher.jsx";
 seedTestUser();
 
 const router = createBrowserRouter([
+  {
+    path: "/addbankpaymentvoucher",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editbankpaymentvoucher/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/bank-payment-voucher",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <BankPaymentVoucher />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
   {
     path: "/addcashreceiptvoucher",
     element: (

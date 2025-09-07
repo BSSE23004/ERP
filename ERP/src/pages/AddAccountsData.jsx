@@ -37,6 +37,7 @@ export default function AddAccountsData() {
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
+  const isBankPayment = location.pathname.includes("bankpaymentvoucher");
   const isVendor = location.pathname.includes("vendor");
   const isCustomer = location.pathname.includes("customer");
   const isEmployee = location.pathname.includes("employee");
@@ -65,6 +66,8 @@ export default function AddAccountsData() {
     ? "cash_payment_vouchers"
     : isCashReceipt
     ? "cash_receipt_vouchers"
+    : isBankPayment
+    ? "bank_payment_vouchers"
     : "";
   // Journal Voucher & Ledger Entry fields
   const [bookingDate, setBookingDate] = useState("");
@@ -137,13 +140,15 @@ export default function AddAccountsData() {
           setTotalCredit(entry.totalCredit || "");
           setStatus(entry.status === "Active");
         }
-      } else if (isCashPayment || isCashReceipt) {
+      } else if (isCashPayment || isCashReceipt || isBankPayment) {
         const voucher = items.find((v) => v.id === id);
         if (voucher) {
           setBookingDate(voucher.bookingDate || "");
           setVoucherNo(voucher.voucherNo || "");
           setDocumentNo(voucher.documentNo || "");
           setTotalAmount(voucher.totalAmount || "");
+          setBank(voucher.bank || "");
+          setBranch(voucher.branch || "");
           setStatus(voucher.status === "Active");
         }
       } else {
@@ -203,11 +208,13 @@ export default function AddAccountsData() {
       setTotalDebit("");
       setTotalCredit("");
       setStatus(true);
-    } else if (isCashPayment || isCashReceipt) {
+    } else if (isCashPayment || isCashReceipt || isBankPayment) {
       setBookingDate("");
       setVoucherNo("");
       setDocumentNo("");
       setTotalAmount("");
+      setBank("");
+      setBranch("");
       setStatus(true);
     }
   }, [id, isChart, isJournal, isLedger, isCashPayment]);
@@ -283,8 +290,14 @@ export default function AddAccountsData() {
       localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
       navigate("/ledger-entries");
       return;
-    } else if (isCashPayment || isCashReceipt) {
-      if (!bookingDate || !voucherNo || !documentNo || !totalAmount) {
+    } else if (isCashPayment || isCashReceipt || isBankPayment) {
+      if (
+        !bookingDate ||
+        !voucherNo ||
+        !documentNo ||
+        !totalAmount ||
+        (isBankPayment && (!bank || !branch))
+      ) {
         setError("Please fill all required fields");
         return;
       }
@@ -296,6 +309,8 @@ export default function AddAccountsData() {
         voucherNo,
         documentNo,
         totalAmount,
+        bank: isBankPayment ? bank : undefined,
+        branch: isBankPayment ? branch : undefined,
         status: status ? "Active" : "Inactive",
       };
       let updatedItems;
@@ -306,7 +321,11 @@ export default function AddAccountsData() {
       }
       localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
       navigate(
-        isCashPayment ? "/cash-payment-voucher" : "/cash-receipt-voucher"
+        isCashPayment
+          ? "/cash-payment-voucher"
+          : isCashReceipt
+          ? "/cash-receipt-voucher"
+          : "/bank-payment-voucher"
       );
       return;
     } else {
@@ -632,7 +651,7 @@ export default function AddAccountsData() {
                     </div>
                   </div>
                 </>
-              ) : isCashPayment || isCashReceipt ? (
+              ) : isCashPayment || isCashReceipt || isBankPayment ? (
                 <>
                   <div className="row mb-3">
                     <div className="col-md-3 mb-3 mb-md-0">
@@ -684,6 +703,44 @@ export default function AddAccountsData() {
                       />
                     </div>
                   </div>
+                  {isBankPayment && (
+                    <div className="row mb-3">
+                      <div className="col-md-3">
+                        <label className="form-label fw-semibold">Bank*</label>
+                        <input
+                          className="form-control"
+                          list="bank-list"
+                          value={bank}
+                          onChange={(e) => setBank(e.target.value)}
+                          placeholder="Select or type Bank"
+                          required
+                        />
+                        <datalist id="bank-list">
+                          {bankOptions.map((opt) => (
+                            <option key={opt} value={opt} />
+                          ))}
+                        </datalist>
+                      </div>
+                      <div className="col-md-3">
+                        <label className="form-label fw-semibold">
+                          Branch*
+                        </label>
+                        <input
+                          className="form-control"
+                          list="branch-list"
+                          value={branch}
+                          onChange={(e) => setBranch(e.target.value)}
+                          placeholder="Select or type Branch"
+                          required
+                        />
+                        <datalist id="branch-list">
+                          {branchOptions.map((opt) => (
+                            <option key={opt} value={opt} />
+                          ))}
+                        </datalist>
+                      </div>
+                    </div>
+                  )}
                   <div className="row mb-3">
                     <div className="col-md-3">
                       <label className="form-label fw-semibold">Status</label>
