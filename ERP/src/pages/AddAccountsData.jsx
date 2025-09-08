@@ -38,6 +38,7 @@ export default function AddAccountsData() {
   const { id } = useParams();
   const location = useLocation();
   const isBankPayment = location.pathname.includes("bankpaymentvoucher");
+  const isBankReceipt = location.pathname.includes("bankreceiptvoucher");
   const isVendor = location.pathname.includes("vendor");
   const isCustomer = location.pathname.includes("customer");
   const isEmployee = location.pathname.includes("employee");
@@ -68,6 +69,8 @@ export default function AddAccountsData() {
     ? "cash_receipt_vouchers"
     : isBankPayment
     ? "bank_payment_vouchers"
+    : isBankReceipt
+    ? "bank_receipt_vouchers"
     : "";
   // Journal Voucher & Ledger Entry fields
   const [bookingDate, setBookingDate] = useState("");
@@ -140,7 +143,12 @@ export default function AddAccountsData() {
           setTotalCredit(entry.totalCredit || "");
           setStatus(entry.status === "Active");
         }
-      } else if (isCashPayment || isCashReceipt || isBankPayment) {
+      } else if (
+        isCashPayment ||
+        isCashReceipt ||
+        isBankPayment ||
+        isBankReceipt
+      ) {
         const voucher = items.find((v) => v.id === id);
         if (voucher) {
           setBookingDate(voucher.bookingDate || "");
@@ -208,7 +216,12 @@ export default function AddAccountsData() {
       setTotalDebit("");
       setTotalCredit("");
       setStatus(true);
-    } else if (isCashPayment || isCashReceipt || isBankPayment) {
+    } else if (
+      isCashPayment ||
+      isCashReceipt ||
+      isBankPayment ||
+      isBankReceipt
+    ) {
       setBookingDate("");
       setVoucherNo("");
       setDocumentNo("");
@@ -290,13 +303,18 @@ export default function AddAccountsData() {
       localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
       navigate("/ledger-entries");
       return;
-    } else if (isCashPayment || isCashReceipt || isBankPayment) {
+    } else if (
+      isCashPayment ||
+      isCashReceipt ||
+      isBankPayment ||
+      isBankReceipt
+    ) {
       if (
         !bookingDate ||
         !voucherNo ||
         !documentNo ||
         !totalAmount ||
-        (isBankPayment && (!bank || !branch))
+        ((isBankPayment || isBankReceipt) && (!bank || !branch))
       ) {
         setError("Please fill all required fields");
         return;
@@ -309,8 +327,8 @@ export default function AddAccountsData() {
         voucherNo,
         documentNo,
         totalAmount,
-        bank: isBankPayment ? bank : undefined,
-        branch: isBankPayment ? branch : undefined,
+        bank: isBankPayment || isBankReceipt ? bank : undefined,
+        branch: isBankPayment || isBankReceipt ? branch : undefined,
         status: status ? "Active" : "Inactive",
       };
       let updatedItems;
@@ -325,7 +343,9 @@ export default function AddAccountsData() {
           ? "/cash-payment-voucher"
           : isCashReceipt
           ? "/cash-receipt-voucher"
-          : "/bank-payment-voucher"
+          : isBankPayment
+          ? "/bank-payment-voucher"
+          : "/bank-receipt-voucher"
       );
       return;
     } else {
@@ -651,7 +671,10 @@ export default function AddAccountsData() {
                     </div>
                   </div>
                 </>
-              ) : isCashPayment || isCashReceipt || isBankPayment ? (
+              ) : isCashPayment ||
+                isCashReceipt ||
+                isBankPayment ||
+                isBankReceipt ? (
                 <>
                   <div className="row mb-3">
                     <div className="col-md-3 mb-3 mb-md-0">
@@ -703,7 +726,7 @@ export default function AddAccountsData() {
                       />
                     </div>
                   </div>
-                  {isBankPayment && (
+                  {(isBankPayment || isBankReceipt) && (
                     <div className="row mb-3">
                       <div className="col-md-3">
                         <label className="form-label fw-semibold">Bank*</label>

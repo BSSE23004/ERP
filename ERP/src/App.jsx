@@ -25,9 +25,42 @@ import JournalVoucher from "./pages/JournalVoucher.jsx";
 import LedgerEntries from "./pages/LedgerEntries.jsx";
 import CashPaymentVoucher from "./pages/CashPaymentVoucher.jsx";
 import CashReceiptVoucher from "./pages/CashReceiptVoucher.jsx";
+import BankReceiptVoucher from "./pages/BankReceiptVoucher.jsx";
 seedTestUser();
 
 const router = createBrowserRouter([
+  {
+    path: "/addbankreceiptvoucher",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editbankreceiptvoucher/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
   {
     path: "/addbankpaymentvoucher",
     element: (
@@ -814,6 +847,22 @@ const router = createBrowserRouter([
             <Sidebar />
             <div className="flex-grow-1">
               <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/bank-receipt-voucher",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <BankReceiptVoucher />
             </div>
           </div>
         </div>
