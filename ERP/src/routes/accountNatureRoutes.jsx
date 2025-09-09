@@ -1,0 +1,56 @@
+import AccountNature from "../pages/AccountNature";
+import AddData from "../pages/AddData";
+import ProtectedRoute from "../components/ProtectedRoute";
+import AppNavbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
+
+export const accountNatureRoutes = [
+  {
+    path: "/account-nature",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AccountNature />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addaccountnature",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editaccountnature/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+];
