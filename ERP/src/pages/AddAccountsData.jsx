@@ -51,6 +51,7 @@ export default function AddAccountsData() {
   const isLedger = location.pathname.includes("ledgerentry");
   const isCashPayment = location.pathname.includes("cashpaymentvoucher");
   const isCashReceipt = location.pathname.includes("cashreceiptvoucher");
+  const isNarration = location.pathname.includes("narration");
   const LOCAL_KEY = isChart
     ? "chart_of_account"
     : isJournal
@@ -71,6 +72,8 @@ export default function AddAccountsData() {
     ? "bank_payment_vouchers"
     : isBankReceipt
     ? "bank_receipt_vouchers"
+    : isNarration
+    ? "narrations"
     : "";
   // Journal Voucher & Ledger Entry fields
   const [bookingDate, setBookingDate] = useState("");
@@ -109,6 +112,8 @@ export default function AddAccountsData() {
   const [paymentNote, setPaymentNote] = useState("");
   const [status, setStatus] = useState(true);
   const [error, setError] = useState("");
+  // Narration state
+  const [narration, setNarration] = useState("");
 
   // Load payment for edit or generate next code for add
   useEffect(() => {
@@ -158,6 +163,13 @@ export default function AddAccountsData() {
           setBank(voucher.bank || "");
           setBranch(voucher.branch || "");
           setStatus(voucher.status === "Active");
+        }
+      } else if (isNarration) {
+        const narrations = items;
+        const narr = narrations.find((n) => n.id === id);
+        if (narr) {
+          setNarration(narr.narration || "");
+          setStatus(narr.status === "Active");
         }
       } else {
         // Payment logic
@@ -229,8 +241,19 @@ export default function AddAccountsData() {
       setBank("");
       setBranch("");
       setStatus(true);
+    } else if (isNarration) {
+      setNarration("");
+      setStatus(true);
     }
-  }, [id, isChart, isJournal, isLedger, isCashPayment]);
+  }, [
+    id,
+    isChart,
+    isJournal,
+    isLedger,
+    isCashPayment,
+    isBankReceipt,
+    isNarration,
+  ]);
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -348,6 +371,27 @@ export default function AddAccountsData() {
           : "/bank-receipt-voucher"
       );
       return;
+    } else if (isNarration) {
+      if (!narration) {
+        setError("Please enter narration");
+        return;
+      }
+      const stored = localStorage.getItem(LOCAL_KEY);
+      const items = stored ? JSON.parse(stored) : [];
+      const newItem = {
+        id: id || Date.now().toString(),
+        narration,
+        status: status ? "Active" : "Inactive",
+      };
+      let updatedItems;
+      if (id) {
+        updatedItems = items.map((n) => (n.id === id ? newItem : n));
+      } else {
+        updatedItems = [...items, newItem];
+      }
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
+      navigate("/narration");
+      return;
     } else {
       // Payment logic
       if (isVendor) {
@@ -450,6 +494,10 @@ export default function AddAccountsData() {
                 ? id
                   ? "Edit Cash Receipt Voucher"
                   : "Create New Cash Receipt Voucher"
+                : isNarration
+                ? id
+                  ? "Edit Narration"
+                  : "Create New Narration"
                 : ""}
             </h3>
             <form onSubmit={handleSave}>
@@ -1002,6 +1050,32 @@ export default function AddAccountsData() {
                       value={paymentNote}
                       onChange={(e) => setPaymentNote(e.target.value)}
                     />
+                  </div>
+                </>
+              ) : isNarration ? (
+                <>
+                  <div className="row mb-3">
+                    <div className="col-md-6 mb-3 mb-md-0">
+                      <label className="form-label fw-semibold">
+                        Narration*
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={narration}
+                        onChange={(e) => setNarration(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">Status</label>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={status}
+                        onChange={(e) => setStatus(e.target.checked)}
+                      />
+                    </div>
                   </div>
                 </>
               ) : null}

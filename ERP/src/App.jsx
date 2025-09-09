@@ -26,9 +26,59 @@ import LedgerEntries from "./pages/LedgerEntries.jsx";
 import CashPaymentVoucher from "./pages/CashPaymentVoucher.jsx";
 import CashReceiptVoucher from "./pages/CashReceiptVoucher.jsx";
 import BankReceiptVoucher from "./pages/BankReceiptVoucher.jsx";
+import Narration from "./pages/Narration.jsx";
+
 seedTestUser();
 
 const router = createBrowserRouter([
+  {
+    path: "/narration",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <Narration />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/addnarration",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/editnarration/:id",
+    element: (
+      <ProtectedRoute>
+        <div>
+          <AppNavbar />
+          <div className="d-flex">
+            <Sidebar />
+            <div className="flex-grow-1">
+              <AddAccountsData />
+            </div>
+          </div>
+        </div>
+      </ProtectedRoute>
+    ),
+  },
   {
     path: "/addbankreceiptvoucher",
     element: (
