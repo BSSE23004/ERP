@@ -112,7 +112,7 @@ export default function DataTable({
               <tr key={row.id}>
                 <td>{startIdx + i + 1}</td>
                 {columns.map((col) => (
-                  <td key={col.field}>
+                  <td key={col.field + "-" + row.id}>
                     {col.field === "status" ? (
                       <span
                         className={`badge px-3 py-2 fw-semibold ${

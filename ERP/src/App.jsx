@@ -1,7 +1,6 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { seedTestUser } from "./utils/seedUser.js";
-import "./App.css";
 import { narrationRoutes } from "./routes/narrationRoutes.jsx";
 import { ledgerRoutes } from "./routes/ledgerRoutes.jsx";
 import { bankPaymentRoutes } from "./routes/bankPaymentRoutes.jsx";
@@ -17,6 +16,9 @@ import { accountGroupRoutes } from "./routes/accountGroupRoutes.jsx";
 import { accountNatureRoutes } from "./routes/accountNatureRoutes.jsx";
 import { homeRoutes } from "./routes/homeRoutes.jsx";
 import { academicRoutes } from "./routes/academicRoutes.jsx";
+import voucherTypeRoutes from "./routes/vouchertype.jsx";
+import UserLogin from "./pages/UserLogin";
+import "./App.css";
 
 seedTestUser();
 
@@ -36,6 +38,9 @@ const router = createBrowserRouter([
   ...accountNatureRoutes,
   ...homeRoutes,
   ...academicRoutes,
+  ...voucherTypeRoutes,
+  { path: "/", element: <UserLogin /> },
+  { path: "*", element: <UserLogin /> },
 ]);
 
 const App = () => {

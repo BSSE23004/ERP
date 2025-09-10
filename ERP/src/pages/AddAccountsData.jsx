@@ -52,6 +52,9 @@ export default function AddAccountsData() {
   const isCashPayment = location.pathname.includes("cashpaymentvoucher");
   const isCashReceipt = location.pathname.includes("cashreceiptvoucher");
   const isNarration = location.pathname.includes("narration");
+  const isVoucherType =
+    location.pathname.includes("addvouchertype") ||
+    location.pathname.includes("editvouchertype");
   const LOCAL_KEY = isChart
     ? "chart_of_account"
     : isJournal
@@ -74,6 +77,8 @@ export default function AddAccountsData() {
     ? "bank_receipt_vouchers"
     : isNarration
     ? "narrations"
+    : isVoucherType
+    ? "voucher_types"
     : "";
   // Journal Voucher & Ledger Entry fields
   const [bookingDate, setBookingDate] = useState("");
@@ -114,13 +119,24 @@ export default function AddAccountsData() {
   const [error, setError] = useState("");
   // Narration state
   const [narration, setNarration] = useState("");
+  // Voucher Type state
+  const [vtCode, setVtCode] = useState("");
+  const [vtName, setVtName] = useState("");
+  const [vtStatus, setVtStatus] = useState(true);
 
   // Load payment for edit or generate next code for add
   useEffect(() => {
     const stored = localStorage.getItem(LOCAL_KEY);
     const items = stored ? JSON.parse(stored) : [];
     if (id) {
-      if (isChart) {
+      if (isVoucherType) {
+        const vt = items.find((v) => v.id === id);
+        if (vt) {
+          setVtCode(vt.code || "");
+          setVtName(vt.name || "");
+          setVtStatus(vt.status === "Active");
+        }
+      } else if (isChart) {
         const account = items.find((a) => a.code === id);
         if (account) {
           setCode(account.code || "");
@@ -201,6 +217,21 @@ export default function AddAccountsData() {
           setStatus(payment.status === "Active");
         }
       }
+    } else if (isVoucherType) {
+      // Generate next code for Voucher Type
+      if (!items.length) {
+        setVtCode("VT-0001");
+      } else {
+        const last = items[items.length - 1]?.code;
+        if (last) {
+          const num = parseInt(last.split("-")[1]) + 1;
+          setVtCode(`VT-${num.toString().padStart(4, "0")}`);
+        } else {
+          setVtCode("VT-0001");
+        }
+      }
+      setVtName("");
+      setVtStatus(true);
     } else if (isChart) {
       // Generate next code for Chart of Account
       if (!items.length) {
@@ -244,6 +275,10 @@ export default function AddAccountsData() {
     } else if (isNarration) {
       setNarration("");
       setStatus(true);
+    } else if (isVoucherType) {
+      setVtCode("");
+      setVtName("");
+      setVtStatus(true);
     }
   }, [
     id,
@@ -253,10 +288,34 @@ export default function AddAccountsData() {
     isCashPayment,
     isBankReceipt,
     isNarration,
+    isVoucherType,
   ]);
 
   const handleSave = (e) => {
     e.preventDefault();
+    if (isVoucherType) {
+      if (!vtCode || !vtName) {
+        setError("Please fill all required fields");
+        return;
+      }
+      const stored = localStorage.getItem(LOCAL_KEY);
+      const items = stored ? JSON.parse(stored) : [];
+      const newItem = {
+        id: id || Date.now().toString(),
+        code: vtCode,
+        name: vtName,
+        status: vtStatus ? "Active" : "Inactive",
+      };
+      let updatedItems;
+      if (id) {
+        updatedItems = items.map((v) => (v.id === id ? newItem : v));
+      } else {
+        updatedItems = [...items, newItem];
+      }
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
+      navigate("/voucher-type");
+      return;
+    }
     if (isChart) {
       if (!code || !name || !accountNature || !accountGroup) {
         setError("Please fill all required fields");
@@ -462,7 +521,11 @@ export default function AddAccountsData() {
         <div style={{ flex: 1, padding: "2rem 2rem 0 2rem", marginTop: 50 }}>
           <div className="bg-white rounded shadow-sm p-4">
             <h3 className="mb-4">
-              {isJournal
+              {isVoucherType
+                ? id
+                  ? "Edit Voucher Type"
+                  : "Create New Voucher Type"
+                : isJournal
                 ? id
                   ? "Edit Journal Voucher"
                   : "Create New Journal Voucher"
@@ -1074,6 +1137,41 @@ export default function AddAccountsData() {
                         className="form-check-input"
                         checked={status}
                         onChange={(e) => setStatus(e.target.checked)}
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : isVoucherType ? (
+                <>
+                  <div className="row mb-3">
+                    <div className="col-md-3 mb-3 mb-md-0">
+                      <label className="form-label fw-semibold">Code*</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={vtCode}
+                        onChange={(e) => setVtCode(e.target.value)}
+                        required
+                        disabled={!!id}
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">Name*</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={vtName}
+                        onChange={(e) => setVtName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="col-md-3">
+                      <label className="form-label fw-semibold">Status</label>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={vtStatus}
+                        onChange={(e) => setVtStatus(e.target.checked)}
                       />
                     </div>
                   </div>
