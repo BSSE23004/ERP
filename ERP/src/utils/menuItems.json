@@ -45,7 +45,7 @@
     "icon": "bx bx-chevron-right",
     "children": [
       { "id": "assettype", "label": "Asset Type" },
-      { "id": "asset-status", "label": "Asset Status" },
+      { "id": "assetstatus", "label": "Asset Status" },
       { "id": "asset-location", "label": "Asset Location" },
       { "id": "asset-subtype", "label": "Asset Sub Type" }
     ]

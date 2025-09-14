@@ -19,6 +19,7 @@ import { academicRoutes } from "./routes/academicRoutes.jsx";
 import voucherTypeRoutes from "./routes/vouchertype.jsx";
 import UserLogin from "./pages/UserLogin";
 import { AssetTypeRoutes } from "./routes/AssetTypeRoutes";
+import AssetStatusRoutes from "./routes/AssetStatusRoutes.jsx";
 import "./App.css";
 
 seedTestUser();
@@ -41,6 +42,7 @@ const router = createBrowserRouter([
   ...academicRoutes,
   ...voucherTypeRoutes,
   ...AssetTypeRoutes,
+  ...AssetStatusRoutes,
   { path: "/", element: <UserLogin /> },
   { path: "*", element: <UserLogin /> },
 ]);

@@ -3,6 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import AppNavbar from "../components/Navbar";
 import AssetTypeForm from "../components/AssetTypeForm";
+import AssetStatusForm from "../components/AssetStatusForm";
 
 export default function AddAssetData() {
   const { id } = useParams();
@@ -12,9 +13,15 @@ export default function AddAssetData() {
     location.pathname.includes("addassettype") ||
     location.pathname.includes("editassettype");
 
+  const isAssetStatus =
+    location.pathname.includes("addassetstatus") ||
+    location.pathname.includes("editassetstatus");
+
   let formComponent = null;
   if (isAssetType) {
     formComponent = <AssetTypeForm id={id} />;
+  } else if (isAssetStatus) {
+    formComponent = <AssetStatusForm code={id} />;
   }
 
   return (
