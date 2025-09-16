@@ -1,3 +1,6 @@
+import AccountGroupForm from "../components/AccountGroupForm";
+import AccountNatureForm from "../components/AccountNatureForm";
+
 import React from "react";
 import { useParams, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
@@ -13,6 +16,8 @@ import NarrationForm from "../components/NarrationForm";
 export default function AddAccountsData() {
   const { id } = useParams();
   const location = useLocation();
+  const isAccountGroup = location.pathname.includes("accountgroup");
+  const isAccountNature = location.pathname.includes("accountnature");
   const isBankPayment = location.pathname.includes("bankpaymentvoucher");
   const isBankReceipt = location.pathname.includes("bankreceiptvoucher");
   const isVendor = location.pathname.includes("vendor");
@@ -33,7 +38,11 @@ export default function AddAccountsData() {
     location.pathname.includes("editvouchertype");
 
   let formComponent = null;
-  if (isVoucherType) {
+  if (isAccountNature) {
+    formComponent = <AccountNatureForm id={id} />;
+  } else if (isAccountGroup) {
+    formComponent = <AccountGroupForm id={id} />;
+  } else if (isVoucherType) {
     formComponent = <VoucherTypeForm id={id} />;
   } else if (isChart) {
     formComponent = <ChartOfAccountForm id={id} />;

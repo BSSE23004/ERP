@@ -2,7 +2,7 @@ import AccountGroup from "../pages/AccountGroup";
 import ProtectedRoute from "../components/ProtectedRoute";
 import AppNavbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-import AddAcademicsData from "../pages/AddAcademicsData";
+import AddAccountsData from "../pages/AddAccountsData";
 
 export const accountGroupRoutes = [
   {
@@ -30,7 +30,7 @@ export const accountGroupRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddAcademicsData />
+              <AddAccountsData />
             </div>
           </div>
         </div>
@@ -46,7 +46,7 @@ export const accountGroupRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddAcademicsData />
+              <AddAccountsData />
             </div>
           </div>
         </div>

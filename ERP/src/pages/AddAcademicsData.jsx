@@ -5,8 +5,6 @@ import ProgramTypeForm from "../components/ProgramTypeForm";
 import AcademicProgramForm from "../components/AcademicProgramForm";
 import AcademicClassForm from "../components/AcademicClassForm";
 import AcademicSectionForm from "../components/AcademicSectionForm";
-import AccountGroupForm from "../components/AccountGroupForm";
-import AccountNatureForm from "../components/AccountNatureForm";
 import { useParams, useLocation } from "react-router-dom";
 
 export default function AddAcademicsData() {
@@ -17,15 +15,10 @@ export default function AddAcademicsData() {
   const isAcademicProgram = location.pathname.includes("academicprogram");
   const isAcademicClass = location.pathname.includes("academicclass");
   const isAcademicSection = location.pathname.includes("academicsection");
-  const isAccountGroup = location.pathname.includes("accountgroup");
-  const isAccountNature = location.pathname.includes("accountnature");
+  // Removed account group/nature logic
 
   let formComponent = null;
-  if (isAccountNature) {
-    formComponent = <AccountNatureForm id={id} />;
-  } else if (isAccountGroup) {
-    formComponent = <AccountGroupForm id={id} />;
-  } else if (isAcademicProgram) {
+  if (isAcademicProgram) {
     formComponent = <AcademicProgramForm id={id} />;
   } else if (isProgramType) {
     formComponent = <ProgramTypeForm id={id} />;

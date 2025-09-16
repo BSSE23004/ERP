@@ -1,5 +1,5 @@
 import AccountNature from "../pages/AccountNature";
-import AddAcademicsData from "../pages/AddAcademicsData";
+import AddAccountsData from "../pages/AddAccountsData";
 import ProtectedRoute from "../components/ProtectedRoute";
 import AppNavbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
@@ -30,7 +30,7 @@ export const accountNatureRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddAcademicsData />
+              <AddAccountsData />
             </div>
           </div>
         </div>
@@ -46,7 +46,7 @@ export const accountNatureRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddAcademicsData />
+              <AddAccountsData />
             </div>
           </div>
         </div>
