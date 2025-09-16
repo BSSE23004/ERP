@@ -1,12 +1,12 @@
-import AssetStatus from "../pages/AssetStatus";
+import AssetLocation from "../pages/AssetLocation";
 import ProtectedRoute from "../components/ProtectedRoute";
 import AppNavbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import AddAssetData from "../pages/AddAssetData";
 
-const AssetStatusRoutes = [
+export const AssetLocationRoutes = [
   {
-    path: "/assetstatus",
+    path: "/assetlocation",
     element: (
       <ProtectedRoute>
         <div>
@@ -14,7 +14,7 @@ const AssetStatusRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AssetStatus />
+              <AssetLocation />
             </div>
           </div>
         </div>
@@ -22,7 +22,7 @@ const AssetStatusRoutes = [
     ),
   },
   {
-    path: "/addassetstatus",
+    path: "/addassetlocation",
     element: (
       <ProtectedRoute>
         <div>
@@ -38,7 +38,7 @@ const AssetStatusRoutes = [
     ),
   },
   {
-    path: "/editassetstatus/:id",
+    path: "/editassetlocation/:id",
     element: (
       <ProtectedRoute>
         <div>
@@ -54,5 +54,3 @@ const AssetStatusRoutes = [
     ),
   },
 ];
-
-export default AssetStatusRoutes;

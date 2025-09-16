@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function AssetStatusForm({ code }) {
+export default function AssetStatusForm({ code, isAssetLocation }) {
   const navigate = useNavigate();
-  const LOCAL_KEY = "asset_status";
-  const storedAssetStatus = localStorage.getItem(LOCAL_KEY);
-  const initialAssetStatus = storedAssetStatus
-    ? JSON.parse(storedAssetStatus)
-    : [];
+  const LOCAL_KEY = isAssetLocation ? "asset_location" : "asset_status";
+  const storedData = localStorage.getItem(LOCAL_KEY);
+  const initialData = storedData ? JSON.parse(storedData) : [];
 
   const [statusCode, setStatusCode] = useState("");
   const [name, setName] = useState("");
@@ -19,27 +17,31 @@ export default function AssetStatusForm({ code }) {
     const stored = localStorage.getItem(LOCAL_KEY);
     const items = stored ? JSON.parse(stored) : [];
     if (code) {
-      const assetStatus = items.find((s) => s.code === code);
-      if (assetStatus) {
-        setStatusCode(assetStatus.code || "");
-        setName(assetStatus.name || "");
-        setDescription(assetStatus.description || "");
-        setStatus(assetStatus.status === "Active");
+      const dataItem = items.find((s) => s.code === code);
+      if (dataItem) {
+        setStatusCode(dataItem.code || "");
+        setName(dataItem.name || "");
+        setDescription(dataItem.description || "");
+        setStatus(dataItem.status === "Active");
       }
     } else {
       if (!items.length) {
-        setStatusCode("ASC-000001");
+        setStatusCode(isAssetLocation ? "ALC-000001" : "ASC-000001");
       } else {
         const last = items[items.length - 1]?.code;
         if (last) {
           const num = parseInt(last.split("-")[1]) + 1;
-          setStatusCode(`ASC-${num.toString().padStart(6, "0")}`);
+          setStatusCode(
+            `${isAssetLocation ? "ALC" : "ASC"}-${num
+              .toString()
+              .padStart(6, "0")}`
+          );
         } else {
-          setStatusCode("ASC-000001");
+          setStatusCode(isAssetLocation ? "ALC-000001" : "ASC-000001");
         }
       }
     }
-  }, [code]);
+  }, [code, isAssetLocation]);
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -62,20 +64,30 @@ export default function AssetStatusForm({ code }) {
       updatedItems = [...items, newItem];
     }
     localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
-    navigate("/assetstatus");
+    navigate(isAssetLocation ? "/assetlocation" : "/assetstatus");
   };
 
   return (
     <>
       <h3 className="mb-4">
-        {code ? "Edit Asset Status" : "Create New Asset Status"}
+        {code
+          ? isAssetLocation
+            ? "Edit Asset Location"
+            : "Edit Asset Status"
+          : isAssetLocation
+          ? "Create New Asset Location"
+          : "Create New Asset Status"}
       </h3>
       <form onSubmit={handleSave}>
         <div className="row mb-3">
           <div className="col-md-3 mb-3 mb-md-0">
-            <label className="form-label fw-semibold">Code*</label>
+            <label htmlFor="statusCode" className="form-label fw-semibold">
+              Code*
+            </label>
             <input
               type="text"
+              id="statusCode"
+              name="statusCode"
               className="form-control"
               value={statusCode}
               onChange={(e) => setStatusCode(e.target.value)}
@@ -84,23 +96,33 @@ export default function AssetStatusForm({ code }) {
             />
           </div>
           <div className="col-md-3">
-            <label className="form-label fw-semibold">Name*</label>
+            <label htmlFor="name" className="form-label fw-semibold">
+              Name*
+            </label>
             <input
               type="text"
+              id="name"
+              name="name"
               className="form-control"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              autoComplete="name"
             />
           </div>
           <div className="col-md-6">
-            <label className="form-label fw-semibold">Description*</label>
+            <label htmlFor="description" className="form-label fw-semibold">
+              Description*
+            </label>
             <textarea
+              id="description"
+              name="description"
               className="form-control"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
               rows={4}
+              autoComplete="off"
             ></textarea>
           </div>
         </div>

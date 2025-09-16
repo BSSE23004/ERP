@@ -17,11 +17,17 @@ export default function AddAssetData() {
     location.pathname.includes("addassetstatus") ||
     location.pathname.includes("editassetstatus");
 
+  const isAssetLocation =
+    location.pathname.includes("addassetlocation") ||
+    location.pathname.includes("editassetlocation");
+
   let formComponent = null;
   if (isAssetType) {
     formComponent = <AssetTypeForm id={id} />;
-  } else if (isAssetStatus) {
-    formComponent = <AssetStatusForm code={id} />;
+  } else if (isAssetStatus || isAssetLocation) {
+    formComponent = (
+      <AssetStatusForm code={id} isAssetLocation={isAssetLocation} />
+    );
   }
 
   return (

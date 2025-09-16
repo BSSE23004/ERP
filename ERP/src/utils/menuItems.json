@@ -46,7 +46,7 @@
     "children": [
       { "id": "assettype", "label": "Asset Type" },
       { "id": "assetstatus", "label": "Asset Status" },
-      { "id": "asset-location", "label": "Asset Location" },
+      { "id": "assetlocation", "label": "Asset Location" },
       { "id": "asset-subtype", "label": "Asset Sub Type" }
     ]
   },
