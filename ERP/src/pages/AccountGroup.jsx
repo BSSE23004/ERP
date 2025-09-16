@@ -4,7 +4,7 @@ import AppNavbar from "../components/Navbar";
 import DataHeader from "../components/DataHeader";
 import DataControls from "../components/DataControls";
 import DataTable from "../components/DataTable";
-import AddData from "./AddData";
+import AddData from "./AddAcademicsData";
 import { useNavigate } from "react-router-dom";
 
 export default function AccountGroup() {

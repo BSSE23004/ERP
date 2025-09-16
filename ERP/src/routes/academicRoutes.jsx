@@ -3,7 +3,7 @@ import AcademicProgram from "../pages/Academics/AcademicProgram";
 import AcademicClass from "../pages/Academics/AcademicClass";
 import AcademicSection from "../pages/Academics/AcademicSection";
 import ProgramType from "../pages/Academics/ProgramType";
-import AddData from "../pages/AddData";
+import AddAcademicsData from "../pages/AddAcademicsData";
 import ProtectedRoute from "../components/ProtectedRoute";
 import AppNavbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
@@ -35,7 +35,7 @@ export const academicRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddData />
+              <AddAcademicsData />
             </div>
           </div>
         </div>
@@ -51,7 +51,7 @@ export const academicRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddData />
+              <AddAcademicsData />
             </div>
           </div>
         </div>
@@ -84,7 +84,7 @@ export const academicRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddData />
+              <AddAcademicsData />
             </div>
           </div>
         </div>
@@ -100,7 +100,7 @@ export const academicRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddData />
+              <AddAcademicsData />
             </div>
           </div>
         </div>
@@ -133,7 +133,7 @@ export const academicRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddData />
+              <AddAcademicsData />
             </div>
           </div>
         </div>
@@ -149,7 +149,7 @@ export const academicRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddData />
+              <AddAcademicsData />
             </div>
           </div>
         </div>
@@ -182,7 +182,7 @@ export const academicRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddData />
+              <AddAcademicsData />
             </div>
           </div>
         </div>
@@ -198,7 +198,7 @@ export const academicRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddData />
+              <AddAcademicsData />
             </div>
           </div>
         </div>
@@ -231,7 +231,7 @@ export const academicRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddData />
+              <AddAcademicsData />
             </div>
           </div>
         </div>
@@ -247,7 +247,7 @@ export const academicRoutes = [
           <div className="d-flex">
             <Sidebar />
             <div className="flex-grow-1">
-              <AddData />
+              <AddAcademicsData />
             </div>
           </div>
         </div>
