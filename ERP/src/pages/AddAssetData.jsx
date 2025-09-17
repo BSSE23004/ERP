@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import AppNavbar from "../components/Navbar";
 import AssetTypeForm from "../components/AssetTypeForm";
 import AssetStatusForm from "../components/AssetStatusForm";
+import AssetSubTypeForm from "../components/AssetSubTypeForm";
 
 export default function AddAssetData() {
   const { id } = useParams();
@@ -21,6 +22,10 @@ export default function AddAssetData() {
     location.pathname.includes("addassetlocation") ||
     location.pathname.includes("editassetlocation");
 
+  const isAssetSubType =
+    location.pathname.includes("addassetsubtype") ||
+    location.pathname.includes("editassetsubtype");
+
   let formComponent = null;
   if (isAssetType) {
     formComponent = <AssetTypeForm id={id} />;
@@ -28,6 +33,8 @@ export default function AddAssetData() {
     formComponent = (
       <AssetStatusForm code={id} isAssetLocation={isAssetLocation} />
     );
+  } else if (isAssetSubType) {
+    formComponent = <AssetSubTypeForm id={id} />;
   }
 
   return (

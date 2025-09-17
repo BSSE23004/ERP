@@ -21,6 +21,7 @@ import UserLogin from "./pages/UserLogin";
 import { AssetTypeRoutes } from "./routes/AssetTypeRoutes";
 import AssetStatusRoutes from "./routes/AssetStatusRoutes.jsx";
 import { AssetLocationRoutes } from "./routes/AssetLocationRoutes.jsx";
+import { assetSubTypeRoutes } from "./routes/AssetSubTypeRoutes.jsx";
 import "./App.css";
 
 seedTestUser();
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
   ...AssetTypeRoutes,
   ...AssetStatusRoutes,
   ...AssetLocationRoutes,
+  ...assetSubTypeRoutes,
   { path: "/", element: <UserLogin /> },
   { path: "*", element: <UserLogin /> },
 ]);

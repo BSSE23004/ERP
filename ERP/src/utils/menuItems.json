@@ -47,7 +47,7 @@
       { "id": "assettype", "label": "Asset Type" },
       { "id": "assetstatus", "label": "Asset Status" },
       { "id": "assetlocation", "label": "Asset Location" },
-      { "id": "asset-subtype", "label": "Asset Sub Type" }
+      { "id": "asset-sub-type", "label": "Asset Sub Type" }
     ]
   },
   {
