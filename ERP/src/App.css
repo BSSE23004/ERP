@@ -12,4 +12,9 @@ body {
   min-height: 100vh;
   background-color: #f9f9f9;
   padding: 20px;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
 }

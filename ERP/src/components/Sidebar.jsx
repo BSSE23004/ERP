@@ -73,11 +73,12 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="sidebar-gradient border-end vh-100 d-flex flex-column z-3 position-fixed overflow-scroll"
+      className="sidebar-gradient border-end vh-100 d-flex flex-column z-3 position-fixed overflow-hidden"
       style={{
         width: "260px",
         top: "3.5rem",
         left: 0,
+        overflow: "hidden",
       }}
     >
       <div className="accordion" id="sidebarAccordion">
@@ -96,18 +97,19 @@ export default function Sidebar() {
             >
               <h2 className="accordion-header" id={`heading-${item.id}`}>
                 <button
-                  className={`accordion-button d-flex align-items-center px-3 py-2 shadow-sm ${
+                  className={`accordion-button d-flex align-items-center px-3 py-4 shadow-sm ${
                     item.children ? "" : "collapsed"
                   } ${isActiveSection ? "fw-bold sidebar-active" : ""}`}
-                  style={
-                    isActiveSection
+                  style={{
+                    ...(isActiveSection
                       ? {
                           background:
                             "linear-gradient(90deg, #211D5A 60%, #ff6600 100%)",
                           color: "#fff",
                         }
-                      : { background: "#f8f9fa", color: "#211D5A" }
-                  }
+                      : { background: "#f8f9fa", color: "#211D5A" }),
+                    minHeight: 64,
+                  }}
                   type="button"
                   data-bs-toggle={item.children ? "collapse" : undefined}
                   data-bs-target={
