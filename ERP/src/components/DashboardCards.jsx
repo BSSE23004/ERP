@@ -15,9 +15,7 @@ function DashboardCards() {
         flexWrap: "wrap",
         gap: "1.5rem",
         justifyContent: "flex-start",
-        padding: "2rem 2rem 2rem 0",
-        width: "100%",
-        overflowX: "hidden",
+        margin: "2.5rem 4% 0 4%",
       }}
     >
       {dashboardCards.map((card, idx) => (

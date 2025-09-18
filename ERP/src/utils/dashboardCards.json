@@ -1,111 +1,25 @@
 [
-  {
-    "label": "Smart POS",
-    "icon": "bx bx-store",
-    "path": "/smart-pos",
-    "color": "#f3f4ff"
-  },
-  {
-    "label": "Customer Invoice",
-    "icon": "bx bx-receipt",
-    "path": "/customer-invoice",
-    "color": "#f3f4ff"
-  },
-  {
-    "label": "GRN Purchase",
-    "icon": "bx bx-cart",
-    "path": "/grn-purchase",
-    "color": "#eafff3"
-  },
-  {
-    "label": "Day Book",
-    "icon": "bx bx-book-open",
-    "path": "/day-book",
-    "color": "#f3f4ff"
-  },
-  {
-    "label": "Purchase Order",
-    "icon": "bx bx-file",
-    "path": "/purchase-order",
-    "color": "#fff8e1"
-  },
-  {
-    "label": "Sale Order",
-    "icon": "bx bx-cog",
-    "path": "/sale-order",
-    "color": "#f3f4ff"
-  },
-  {
-    "label": "Scrap Sale",
-    "icon": "bx bx-recycle",
-    "path": "/scrap-sale",
-    "color": "#f3f4ff"
-  },
-  {
-    "label": "Demand Note Order",
-    "icon": "bx bx-plus-circle",
-    "path": "/demand-note-order",
-    "color": "#f8f3ff"
-  },
-  {
-    "label": "Inter Store Transfer",
-    "icon": "bx bx-transfer",
-    "path": "/inter-store-transfer",
-    "color": "#f3f4ff"
-  },
-  {
-    "label": "Product",
-    "icon": "bx bx-cube",
-    "path": "/product",
-    "color": "#f3f4ff"
-  },
-  {
-    "label": "Stock",
-    "icon": "bx bx-layer",
-    "path": "/stock",
-    "color": "#f3f4ff"
-  },
-  {
-    "label": "Performa Invoice",
-    "icon": "bx bx-checkbox-checked",
-    "path": "/performa-invoice",
-    "color": "#eafff3"
-  },
-  {
-    "label": "Reports",
-    "icon": "bx bx-bar-chart-alt-2",
-    "path": "/reports",
-    "color": "#f3f4ff"
-  },
-  {
-    "label": "Employee Payment",
-    "icon": "bx bx-wallet",
-    "path": "/employee-payment",
-    "color": "#fff3f3"
-  },
-  {
-    "label": "Delivery Order",
-    "icon": "bx bx-truck",
-    "path": "/delivery-order",
-    "color": "#f3f4ff"
-  },
-  {
-    "label": "Inward Gate Pass",
-    "icon": "bx bx-log-in",
-    "path": "/inward-gate-pass",
-    "color": "#f3f4ff"
-  },
-  {
-    "label": "Outward Gate Pass",
-    "icon": "bx bx-log-out",
-    "path": "/outward-gate-pass",
-    "color": "#f3f4ff"
-  },
-  {
-    "label": "Gate Pass",
-    "icon": "bx bx-door-open",
-    "path": "/gate-pass",
-    "color": "#fff8e1",
-    "notification": 16
-  }
+  {"label": "Academic Subject", "icon": "bx bx-book", "path": "/academic-subject", "color": "#f3f4ff"},
+  {"label": "Program Type", "icon": "bx bx-cog", "path": "/program-type", "color": "#eafff3"},
+  {"label": "Academic Program", "icon": "bx bx-buildings", "path": "/academic-program", "color": "#f3f4ff"},
+  {"label": "Class", "icon": "bx bx-group", "path": "/academic-class", "color": "#fff8e1"},
+  {"label": "Section", "icon": "bx bx-objects-vertical-bottom", "path": "/academic-section", "color": "#f3f4ff"},
+  {"label": "Customer Payment", "icon": "bx bx-user-check", "path": "/customer-payment", "color": "#f3f4ff"},
+  {"label": "Vendor Payment", "icon": "bx bx-user-voice", "path": "/vendor-payment", "color": "#f3f4ff"},
+  {"label": "Account Group", "icon": "bx bx-layer", "path": "/account-group", "color": "#eafff3"},
+  {"label": "Account Nature", "icon": "bx bx-shape-circle", "path": "/account-nature", "color": "#f3f4ff"},
+  {"label": "Chart of Account", "icon": "bx bx-bar-chart-alt-2", "path": "/chart-of-account", "color": "#fff8e1"},
+  {"label": "Journal Voucher", "icon": "bx bx-notepad", "path": "/journal-voucher", "color": "#f3f4ff"},
+  {"label": "Employee Payment", "icon": "bx bx-wallet", "path": "/employee-payment", "color": "#fff3f3"},
+  {"label": "Ledger Entries", "icon": "bx bx-list-ol", "path": "/ledger-entries", "color": "#f3f4ff"},
+  {"label": "Cash Payment Voucher", "icon": "bx bx-money-withdraw", "path": "/cash-payment-voucher", "color": "#f3f4ff"},
+  {"label": "Cash Receipt Voucher", "icon": "bx bx-money", "path": "/cash-receipt-voucher", "color": "#f3f4ff"},
+  {"label": "Bank Payment Voucher", "icon": "bx bx-building", "path": "/bank-payment-voucher", "color": "#f3f4ff"},
+  {"label": "Bank Receipt Voucher", "icon": "bx bx-credit-card", "path": "/bank-receipt-voucher", "color": "#f3f4ff"},
+  {"label": "Narration", "icon": "bx bx-message-square-detail", "path": "/narration", "color": "#f8f3ff"},
+  {"label": "Voucher Type", "icon": "bx bx-file", "path": "/voucher-type", "color": "#f3f4ff"},
+  {"label": "Asset Type", "icon": "bx bx-cube", "path": "/assettype", "color": "#f3f4ff"},
+  {"label": "Asset Status", "icon": "bx bx-check-shield", "path": "/assetstatus", "color": "#f3f4ff"},
+  {"label": "Asset Location", "icon": "bx bx-map", "path": "/assetlocation", "color": "#f3f4ff"},
+  {"label": "Asset Sub Type", "icon": "bx bx-shape-square", "path": "/asset-sub-type", "color": "#fff8e1"}
 ]

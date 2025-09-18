@@ -1,6 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import menuItemsData from "../utils/menuItems.json";
+import {
+  FaBook,
+  FaCogs,
+  FaMoneyCheckAlt,
+  FaBoxes,
+  FaChevronDown,
+  FaUserGraduate,
+  FaUniversity,
+  FaUsers,
+  FaChartBar,
+  FaWallet,
+  FaFileInvoiceDollar,
+  FaBuilding,
+  FaLayerGroup,
+  FaClipboardList,
+  FaListAlt,
+  FaRegFileAlt,
+  FaRegCreditCard,
+  FaRegListAlt,
+  FaRegMoneyBillAlt,
+  FaRegBuilding,
+  FaRegUser,
+  FaRegChartBar,
+} from "react-icons/fa";
 
 export default function Sidebar() {
   const [menuItems, setMenuItems] = useState([]);
@@ -23,15 +47,42 @@ export default function Sidebar() {
 
   const handleSelect = (path) => navigate(path);
 
+  // Icon mapping for main sections
+  const sectionIcons = {
+    "academic-subject": <FaBook className="me-2" />,
+    "academic-setup": <FaCogs className="me-2" />,
+    accounts: <FaMoneyCheckAlt className="me-2" />,
+    "asset-management": <FaBoxes className="me-2" />,
+    attendance: <FaClipboardList className="me-2" />,
+    crm: <FaUsers className="me-2" />,
+    dashboard: <FaChartBar className="me-2" />,
+    "employee-self-service": <FaRegUser className="me-2" />,
+    feedback: <FaRegFileAlt className="me-2" />,
+    "front-office": <FaBuilding className="me-2" />,
+    hrs: <FaRegUser className="me-2" />,
+    "hrs-setup": <FaCogs className="me-2" />,
+    inventory: <FaLayerGroup className="me-2" />,
+    "inventory-setup": <FaLayerGroup className="me-2" />,
+    payroll: <FaWallet className="me-2" />,
+    "point-of-sale": <FaRegCreditCard className="me-2" />,
+    production: <FaRegListAlt className="me-2" />,
+    "property-management": <FaRegBuilding className="me-2" />,
+    security: <FaRegUser className="me-2" />,
+    settings: <FaCogs className="me-2" />,
+  };
+
   return (
     <aside
-      className="bg-white border-end vh-100 d-flex flex-column z-3 position-fixed overflow-scroll"
-      style={{ width: "250px", top: "4rem" }}
+      className="sidebar-gradient border-end vh-100 d-flex flex-column z-3 position-fixed overflow-scroll"
+      style={{
+        width: "260px",
+        top: "3.5rem",
+        left: 0,
+      }}
     >
       <div className="accordion" id="sidebarAccordion">
         {menuItems.map((item) => {
           const isOpen = openAccordion === item.id;
-          // Highlight parent if its child is active or itself is active
           const isActiveSection =
             (item.children &&
               item.children.some(
@@ -39,17 +90,23 @@ export default function Sidebar() {
               )) ||
             location.pathname === `/${item.id}`;
           return (
-            <div className="accordion-item" key={item.id}>
-              {/* Header */}
+            <div
+              className="accordion-item border-0 bg-transparent mb-3"
+              key={item.id}
+            >
               <h2 className="accordion-header" id={`heading-${item.id}`}>
                 <button
-                  className={`accordion-button d-flex align-items-center ${
+                  className={`accordion-button d-flex align-items-center px-3 py-2 shadow-sm ${
                     item.children ? "" : "collapsed"
-                  } ${isActiveSection ? "fw-bold" : ""}`}
+                  } ${isActiveSection ? "fw-bold sidebar-active" : ""}`}
                   style={
                     isActiveSection
-                      ? { backgroundColor: "#211D5A", color: "#fff" }
-                      : {}
+                      ? {
+                          background:
+                            "linear-gradient(90deg, #211D5A 60%, #ff6600 100%)",
+                          color: "#fff",
+                        }
+                      : { background: "#f8f9fa", color: "#211D5A" }
                   }
                   type="button"
                   data-bs-toggle={item.children ? "collapse" : undefined}
@@ -67,17 +124,24 @@ export default function Sidebar() {
                       setOpenAccordion(isOpen ? null : item.id);
                     }
                   }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.boxShadow = "0 4px 24px #ff660055")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.boxShadow = isActiveSection
+                      ? "0 2px 12px #211d5a22"
+                      : "none")
+                  }
                 >
-                  <i className={`${item.icon} me-2`}></i>
+                  {sectionIcons[item.id]}
                   {item.label}
                 </button>
               </h2>
-              <br />
               {/* Collapsible Body */}
               {item.children && (
                 <div
                   id={`collapse-${item.id}`}
-                  className={`accordion-collapse collapse${
+                  className={`accordion-collapse collapse mt-3${
                     isOpen ? " show" : ""
                   }`}
                   aria-labelledby={`heading-${item.id}`}
@@ -90,22 +154,30 @@ export default function Sidebar() {
                         return (
                           <li key={sub.id}>
                             <button
-                              className={`nav-link btn w-100 text-start ps-5 ${
-                                isActiveSub ? "fw-bold" : ""
+                              className={`nav-link btn w-100 text-start ps-5 py-2 sidebar-sub-link ${
+                                isActiveSub ? "fw-bold sidebar-active-sub" : ""
                               }`}
                               style={
                                 isActiveSub
                                   ? {
-                                      backgroundColor: "#ff6600",
+                                      background:
+                                        "linear-gradient(90deg, #ff6600 60%, #211D5A 100%)",
                                       color: "#fff",
                                     }
-                                  : {}
+                                  : { color: "#211D5A" }
                               }
                               onClick={() => handleSelect(`/${sub.id}`)}
+                              onMouseEnter={(e) =>
+                                (e.currentTarget.style.background = "#ffe5d0")
+                              }
+                              onMouseLeave={(e) =>
+                                (e.currentTarget.style.background = isActiveSub
+                                  ? "linear-gradient(90deg, #ff6600 60%, #211D5A 100%)"
+                                  : "transparent")
+                              }
                             >
                               {sub.label}
                             </button>
-                            <br />
                           </li>
                         );
                       })}
@@ -117,6 +189,23 @@ export default function Sidebar() {
           );
         })}
       </div>
+      <style>{`
+        .sidebar-gradient {
+          background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        .sidebar-logo {
+          border-bottom: 1px solid #e9ecef;
+        }
+        .sidebar-active {
+          box-shadow: 0 4px 24px #211d5a33 !important;
+        }
+        .sidebar-active-sub {
+          box-shadow: 0 2px 8px #ff660033 !important;
+        }
+        .sidebar-sub-link:hover {
+          color: #ff6600 !important;
+        }
+      `}</style>
     </aside>
   );
 }
