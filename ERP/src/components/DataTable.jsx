@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
 
-export default function DataTable({
-  data,
-  showCount,
-  onEdit,
-  onDelete,
-  columns,
-}) {
+export default function DataTable(props) {
+  const { data, showCount, onEdit, onDelete, columns } = props;
   // Sorting state
   const [sortBy, setSortBy] = useState("sr"); // "sr", "code", "name", "status"
   const [sortOrder, setSortOrder] = useState("asc"); // "asc" or "desc"
@@ -94,14 +89,14 @@ export default function DataTable({
                 )}
               </th>
             ))}
-            <th>Action</th>
+            {!props.readOnly && <th>Action</th>}
           </tr>
         </thead>
         <tbody>
           {pageData.length === 0 ? (
             <tr>
               <td
-                colSpan={columns.length + 2}
+                colSpan={columns.length + (props.readOnly ? 1 : 2)}
                 className="text-center py-4 text-secondary"
               >
                 No data found
@@ -126,22 +121,24 @@ export default function DataTable({
                     )}
                   </td>
                 ))}
-                <td>
-                  <button
-                    title="Edit"
-                    className="btn btn-link p-0 me-2"
-                    onClick={() => onEdit(row)}
-                  >
-                    <i className="bx bx-edit text-primary fs-5"></i>
-                  </button>
-                  <button
-                    title="Delete"
-                    className="btn btn-link p-0"
-                    onClick={() => onDelete(row)}
-                  >
-                    <i className="bx bx-trash text-danger fs-5"></i>
-                  </button>
-                </td>
+                {!props.readOnly && (
+                  <td>
+                    <button
+                      title="Edit"
+                      className="btn btn-link p-0 me-2"
+                      onClick={() => onEdit(row)}
+                    >
+                      <i className="bx bx-edit text-primary fs-5"></i>
+                    </button>
+                    <button
+                      title="Delete"
+                      className="btn btn-link p-0"
+                      onClick={() => onDelete(row)}
+                    >
+                      <i className="bx bx-trash text-danger fs-5"></i>
+                    </button>
+                  </td>
+                )}
               </tr>
             ))
           )}
