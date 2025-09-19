@@ -7,10 +7,12 @@ import LivePreviewCard from "../components/LivePreviewCard";
 import DataTable from "../components/DataTable";
 import dashboardCardsData from "../utils/dashboardCards.json";
 import previewConfig from "../utils/previewConfig.json";
+
 function Home() {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const handleSearch = (val) => {
-    // Navigate or filter based on `val`
-    console.log("Search:", val);
+    setSearchTerm(val.trim().toLowerCase());
   };
 
   return (
@@ -43,6 +45,21 @@ function Home() {
                 data = [];
               }
             }
+            let filteredData = data;
+            // If searchTerm is empty, show all data for all cards
+            if (searchTerm && preview) {
+              filteredData = data.filter((row) =>
+                preview.columns.some((col) => {
+                  const val = row[col.field];
+                  return (
+                    (typeof val === "string" &&
+                      val.toLowerCase().includes(searchTerm)) ||
+                    (typeof val === "number" &&
+                      val.toString().includes(searchTerm))
+                  );
+                })
+              );
+            }
             return (
               <LivePreviewCard
                 key={card.label}
@@ -52,7 +69,7 @@ function Home() {
               >
                 {preview ? (
                   <DataTable
-                    data={data}
+                    data={filteredData}
                     columns={preview.columns}
                     showCount={5}
                     onEdit={() => {}}

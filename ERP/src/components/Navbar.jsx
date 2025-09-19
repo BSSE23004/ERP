@@ -59,29 +59,6 @@ export default function AppNavbar({ onSearch }) {
             </Button>
           </Form>
 
-          {/* Notification Dropdown */}
-          <Dropdown align="end">
-            <Dropdown.Toggle variant="link" bsPrefix="p-0 position-relative">
-              <img
-                src="https://demo.algosofttech.com/admin/assets/img/icons/notification-bing.svg"
-                alt="Notifications"
-              />
-              <Badge
-                bg="danger"
-                pill
-                className="position-absolute top-0 end-0"
-              />
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              <Dropdown.Header>Notifications</Dropdown.Header>
-              <Dropdown.Item href="#">Clear All</Dropdown.Item>
-              <Dropdown.Divider />
-              <Dropdown.Item href="activities.html">
-                View all Notifications
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-
           {/* Logout Button */}
           <Button
             variant="warning"
