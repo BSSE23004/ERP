@@ -1,7 +1,7 @@
 import Home from "../pages/Home";
 import ProtectedRoute from "../components/ProtectedRoute";
-import AppNavbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
+import AppNavbar from "../components/PagesTemplate/Navbar";
+import Sidebar from "../components/PagesTemplate/Sidebar";
 
 export const homeRoutes = [
   {

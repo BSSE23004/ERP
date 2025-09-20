@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../../components/Sidebar";
-import AppNavbar from "../../components/Navbar";
-import DataHeader from "../../components/DataHeader";
-import DataControls from "../../components/DataControls";
-import DataTable from "../../components/DataTable";
+import Sidebar from "../../components/PagesTemplate/Sidebar";
+import AppNavbar from "../../components/PagesTemplate/Navbar";
+import DataHeader from "../../components/PagesTemplate/DataHeader";
+import DataControls from "../../components/PagesTemplate/DataControls";
+import DataTable from "../../components/PagesTemplate/DataTable";
 import { useNavigate } from "react-router-dom";
 
 export default function ProgramType() {

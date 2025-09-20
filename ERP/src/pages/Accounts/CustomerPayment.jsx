@@ -1,67 +1,68 @@
-import React, { useState, useEffect } from "react";
-import Sidebar from "../../components/PagesTemplate/Sidebar";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import AppNavbar from "../../components/PagesTemplate/Navbar";
+import Sidebar from "../../components/PagesTemplate/Sidebar";
 import DataHeader from "../../components/PagesTemplate/DataHeader";
 import DataControls from "../../components/PagesTemplate/DataControls";
 import DataTable from "../../components/PagesTemplate/DataTable";
-import { useNavigate } from "react-router-dom";
 
-export default function AcademicProgram() {
+export default function CustomerPayment() {
   const navigate = useNavigate();
-  const LOCAL_KEY = "academic_programs";
-  // Load from localStorage
-  const storedPrograms = localStorage.getItem(LOCAL_KEY);
-  const initialPrograms = storedPrograms ? JSON.parse(storedPrograms) : [];
-  const [programs, setPrograms] = useState(initialPrograms);
+  const LOCAL_KEY = "customer_payments";
+  const storedPayments = localStorage.getItem(LOCAL_KEY);
+  const initialPayments = storedPayments ? JSON.parse(storedPayments) : [];
+  const [payments, setPayments] = useState(initialPayments);
   const [showModal, setShowModal] = useState(false);
-  const [programToDelete, setProgramToDelete] = useState(null);
+  const [paymentToDelete, setPaymentToDelete] = useState(null);
   const [search, setSearch] = useState("");
   const [showCount, setShowCount] = useState(10);
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(programs));
-  }, [programs]);
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(payments));
+  }, [payments]);
 
   // Filtering logic
-  const filtered = programs.filter(
+  const filtered = payments.filter(
     (p) =>
-      p.code?.toLowerCase().includes(search.toLowerCase()) ||
-      p.name?.toLowerCase().includes(search.toLowerCase()) ||
-      p.programType?.toLowerCase().includes(search.toLowerCase()) ||
-      String(p.programFee)?.toLowerCase().includes(search.toLowerCase()) ||
-      p.description?.toLowerCase().includes(search.toLowerCase())
+      (p.customer || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.paymentType || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.bank || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.branch || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.amount || "").toString().includes(search) ||
+      (p.status || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const handleAdd = () => {
-    navigate("/addacademicprogram");
+    navigate("/addcustomerpayment");
   };
-  const handleEdit = (program) => {
-    navigate(`/editacademicprogram/${program.code}`);
+  const handleEdit = (payment) => {
+    navigate(`/editcustomerpayment/${payment.code}`);
   };
-  const handleDelete = (program) => {
-    setProgramToDelete(program);
+  const handleDelete = (payment) => {
+    setPaymentToDelete(payment);
     setShowModal(true);
   };
   const confirmDelete = () => {
-    if (programToDelete) {
-      const updated = programs.filter((p) => p.code !== programToDelete.code);
-      setPrograms(updated);
+    if (paymentToDelete) {
+      const updated = payments.filter((p) => p.code !== paymentToDelete.code);
+      setPayments(updated);
       localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
       setShowModal(false);
-      setProgramToDelete(null);
+      setPaymentToDelete(null);
     }
   };
   const closeModal = () => {
     setShowModal(false);
-    setProgramToDelete(null);
+    setPaymentToDelete(null);
   };
 
   const columns = [
-    { field: "code", header: "Code", sortable: true },
-    { field: "name", header: "Name", sortable: true },
-    { field: "programType", header: "Program Type", sortable: true },
-    { field: "programFee", header: "Program Fee", sortable: true },
-    { field: "description", header: "Description" },
+    { field: "customer", header: "Customer", sortable: true },
+    { field: "paymentType", header: "Payment Type", sortable: true },
+    { field: "paymentDate", header: "Payment Date", sortable: true },
+    { field: "bank", header: "Bank", sortable: true },
+    { field: "branch", header: "Branch", sortable: true },
+    { field: "amount", header: "Amount", sortable: true },
     { field: "status", header: "Status", sortable: true },
   ];
 
@@ -75,10 +76,10 @@ export default function AcademicProgram() {
         <AppNavbar />
         <div style={{ marginTop: 50, padding: "2rem" }}>
           <DataHeader
-            title="Academic Program List"
-            subtitle="Manage Your Academic Program"
+            title="Customer Payment List"
+            subtitle="Manage Your Customer Payment"
             onAdd={handleAdd}
-            buttonText="Add New Academic Program"
+            buttonText="Add New Customer Payment"
           />
           <DataControls
             showCount={showCount}
@@ -86,7 +87,6 @@ export default function AcademicProgram() {
             search={search}
             setSearch={setSearch}
             data={filtered}
-            title="Academic Programs"
             columns={columns}
           />
           <DataTable
@@ -113,7 +113,7 @@ export default function AcademicProgram() {
                 ></button>
               </div>
               <div className="modal-body">
-                Are you sure you want to delete this academic program?
+                Are you sure you want to delete this customer payment?
               </div>
               <div className="modal-footer">
                 <button

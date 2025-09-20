@@ -6,56 +6,54 @@ import DataControls from "../../components/PagesTemplate/DataControls";
 import DataTable from "../../components/PagesTemplate/DataTable";
 import { useNavigate } from "react-router-dom";
 
-export default function AcademicClass() {
+export default function AccountNature() {
   const navigate = useNavigate();
-  const LOCAL_KEY = "academic_classes";
+  const LOCAL_KEY = "account_nature";
   // Load from localStorage
-  const storedClasses = localStorage.getItem(LOCAL_KEY);
-  const initialClasses = storedClasses ? JSON.parse(storedClasses) : [];
-  const [classes, setClasses] = useState(initialClasses);
+  const storedNature = localStorage.getItem(LOCAL_KEY);
+  const initialNature = storedNature ? JSON.parse(storedNature) : [];
+  const [nature, setNature] = useState(initialNature);
   const [showModal, setShowModal] = useState(false);
-  const [classToDelete, setClassToDelete] = useState(null);
+  const [natureToDelete, setNatureToDelete] = useState(null);
   const [search, setSearch] = useState("");
   const [showCount, setShowCount] = useState(10);
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(classes));
-  }, [classes]);
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(nature));
+  }, [nature]);
 
   // Filtering logic
-  const filtered = classes.filter(
-    (c) =>
-      c.code?.toLowerCase().includes(search.toLowerCase()) ||
-      c.name?.toLowerCase().includes(search.toLowerCase()) ||
-      c.description?.toLowerCase().includes(search.toLowerCase())
+  const filtered = nature.filter(
+    (n) =>
+      n.name?.toLowerCase().includes(search.toLowerCase()) ||
+      n.description?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleAdd = () => {
-    navigate("/addacademicclass");
+    navigate("/addaccountnature");
   };
   const handleEdit = (item) => {
-    navigate(`/editacademicclass/${item.code}`);
+    navigate(`/editaccountnature/${item.code}`);
   };
   const handleDelete = (item) => {
-    setClassToDelete(item);
+    setNatureToDelete(item);
     setShowModal(true);
   };
   const confirmDelete = () => {
-    if (classToDelete) {
-      const updated = classes.filter((c) => c.code !== classToDelete.code);
-      setClasses(updated);
+    if (natureToDelete && natureToDelete.code !== undefined) {
+      const updated = nature.filter((n) => n.code !== natureToDelete.code);
+      setNature(updated);
       localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
-      setShowModal(false);
-      setClassToDelete(null);
     }
+    setShowModal(false);
+    setNatureToDelete(null);
   };
   const closeModal = () => {
     setShowModal(false);
-    setClassToDelete(null);
+    setNatureToDelete(null);
   };
 
   const columns = [
-    { field: "code", header: "Code", sortable: true },
     { field: "name", header: "Name", sortable: true },
     { field: "description", header: "Description" },
     { field: "status", header: "Status", sortable: true },
@@ -71,10 +69,10 @@ export default function AcademicClass() {
         <AppNavbar />
         <div style={{ marginTop: 50, padding: "2rem" }}>
           <DataHeader
-            title="Academic Class List"
-            subtitle="Manage Your Academic Class"
+            title="Account Nature List"
+            subtitle="Manage Your Account Nature"
             onAdd={handleAdd}
-            buttonText="Add New Academic Class"
+            buttonText="Add New Account Nature"
           />
           <DataControls
             showCount={showCount}
@@ -82,7 +80,7 @@ export default function AcademicClass() {
             search={search}
             setSearch={setSearch}
             data={filtered}
-            title="Academic Classes"
+            title="Account Nature"
             columns={columns}
           />
           <DataTable

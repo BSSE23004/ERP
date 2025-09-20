@@ -6,58 +6,56 @@ import DataControls from "../../components/PagesTemplate/DataControls";
 import DataTable from "../../components/PagesTemplate/DataTable";
 import { useNavigate } from "react-router-dom";
 
-export default function AcademicClass() {
+export default function VoucherType() {
   const navigate = useNavigate();
-  const LOCAL_KEY = "academic_classes";
-  // Load from localStorage
-  const storedClasses = localStorage.getItem(LOCAL_KEY);
-  const initialClasses = storedClasses ? JSON.parse(storedClasses) : [];
-  const [classes, setClasses] = useState(initialClasses);
+  const LOCAL_KEY = "voucher_types";
+  const storedTypes = localStorage.getItem(LOCAL_KEY);
+  const initialTypes = storedTypes ? JSON.parse(storedTypes) : [];
+  const [voucherTypes, setVoucherTypes] = useState(initialTypes);
   const [showModal, setShowModal] = useState(false);
-  const [classToDelete, setClassToDelete] = useState(null);
+  const [typeToDelete, setTypeToDelete] = useState(null);
   const [search, setSearch] = useState("");
   const [showCount, setShowCount] = useState(10);
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(classes));
-  }, [classes]);
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(voucherTypes));
+  }, [voucherTypes]);
 
   // Filtering logic
-  const filtered = classes.filter(
-    (c) =>
-      c.code?.toLowerCase().includes(search.toLowerCase()) ||
-      c.name?.toLowerCase().includes(search.toLowerCase()) ||
-      c.description?.toLowerCase().includes(search.toLowerCase())
+  const filtered = voucherTypes.filter(
+    (v) =>
+      (v.code || "").toLowerCase().includes(search.toLowerCase()) ||
+      (v.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (v.status || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const handleAdd = () => {
-    navigate("/addacademicclass");
+    navigate("/addvouchertype");
   };
   const handleEdit = (item) => {
-    navigate(`/editacademicclass/${item.code}`);
+    navigate(`/editvouchertype/${item.id}`);
   };
   const handleDelete = (item) => {
-    setClassToDelete(item);
+    setTypeToDelete(item);
     setShowModal(true);
   };
   const confirmDelete = () => {
-    if (classToDelete) {
-      const updated = classes.filter((c) => c.code !== classToDelete.code);
-      setClasses(updated);
+    if (typeToDelete && typeToDelete.id !== undefined) {
+      const updated = voucherTypes.filter((v) => v.id !== typeToDelete.id);
+      setVoucherTypes(updated);
       localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
-      setShowModal(false);
-      setClassToDelete(null);
     }
+    setShowModal(false);
+    setTypeToDelete(null);
   };
   const closeModal = () => {
     setShowModal(false);
-    setClassToDelete(null);
+    setTypeToDelete(null);
   };
 
   const columns = [
     { field: "code", header: "Code", sortable: true },
     { field: "name", header: "Name", sortable: true },
-    { field: "description", header: "Description" },
     { field: "status", header: "Status", sortable: true },
   ];
 
@@ -71,10 +69,10 @@ export default function AcademicClass() {
         <AppNavbar />
         <div style={{ marginTop: 50, padding: "2rem" }}>
           <DataHeader
-            title="Academic Class List"
-            subtitle="Manage Your Academic Class"
+            title="Voucher Type List"
+            subtitle="Manage Your Voucher Type"
             onAdd={handleAdd}
-            buttonText="Add New Academic Class"
+            buttonText="Add New Voucher Type"
           />
           <DataControls
             showCount={showCount}
@@ -82,7 +80,7 @@ export default function AcademicClass() {
             search={search}
             setSearch={setSearch}
             data={filtered}
-            title="Academic Classes"
+            title="Voucher Type"
             columns={columns}
           />
           <DataTable
@@ -95,24 +93,31 @@ export default function AcademicClass() {
         </div>
         {/* Delete Confirmation Modal */}
         {showModal && (
-          <div
-            className="modal fade show"
-            tabIndex="-1"
-            style={{ display: "block", background: "rgba(0,0,0,0.3)" }}
-          >
-            <div className="modal-dialog modal-dialog-centered">
+          <div className="modal show d-block" tabIndex="-1">
+            <div className="modal-dialog">
               <div className="modal-content">
-                <div className="modal-header" style={{ background: "#f50031" }}>
-                  <h5 className="modal-title text-white">
-                    Are you sure want to delete?
-                  </h5>
+                <div className="modal-header">
+                  <h5 className="modal-title">Confirm Delete</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={closeModal}
+                  ></button>
                 </div>
-                <div className="modal-footer d-flex justify-content-center gap-3">
-                  <button className="btn btn-dark px-4" onClick={closeModal}>
-                    Close
+                <div className="modal-body">
+                  Are you sure you want to delete this voucher type?
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={closeModal}
+                  >
+                    Cancel
                   </button>
                   <button
-                    className="btn btn-warning text-white px-4"
+                    type="button"
+                    className="btn btn-danger"
                     onClick={confirmDelete}
                   >
                     Delete

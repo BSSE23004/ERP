@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import AppNavbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
+import AppNavbar from "../components/PagesTemplate/Navbar";
+import Sidebar from "../components/PagesTemplate/Sidebar";
 import { Link } from "react-router-dom";
-import DashboardCards from "../components/DashboardCards";
-import LivePreviewCard from "../components/LivePreviewCard";
-import DataTable from "../components/DataTable";
+import DashboardCards from "../components/HomePage/DashboardCards";
+import LivePreviewCard from "../components/HomePage/LivePreviewCard";
+import DataTable from "../components/PagesTemplate/DataTable";
 import dashboardCardsData from "../utils/dashboardCards.json";
 import previewConfig from "../utils/previewConfig.json";
 
