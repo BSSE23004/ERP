@@ -5,8 +5,6 @@ import AcademicSection from "../../pages/Academics/AcademicSection";
 import ProgramType from "../../pages/Academics/ProgramType";
 import AddAcademicsData from "../../pages/Academics/AddAcademicsData";
 import ProtectedRoute from "../../components/ProtectedRoute";
-import AppNavbar from "../../components/PagesTemplate/Navbar";
-import Sidebar from "../../components/PagesTemplate/Sidebar";
 
 export const academicRoutes = [
   // Academic Subject
@@ -14,15 +12,7 @@ export const academicRoutes = [
     path: "/academic-subject",
     element: (
       <ProtectedRoute>
-        <div>
-          <AppNavbar />
-          <div className="d-flex">
-            <Sidebar />
-            <div className="flex-grow-1">
-              <AcademicSubject />
-            </div>
-          </div>
-        </div>
+        <AcademicSubject />
       </ProtectedRoute>
     ),
   },
@@ -47,15 +37,7 @@ export const academicRoutes = [
     path: "/academic-program",
     element: (
       <ProtectedRoute>
-        <div>
-          <AppNavbar />
-          <div className="d-flex">
-            <Sidebar />
-            <div className="flex-grow-1">
-              <AcademicProgram />
-            </div>
-          </div>
-        </div>
+        <AcademicProgram />
       </ProtectedRoute>
     ),
   },
@@ -80,15 +62,7 @@ export const academicRoutes = [
     path: "/academic-class",
     element: (
       <ProtectedRoute>
-        <div>
-          <AppNavbar />
-          <div className="d-flex">
-            <Sidebar />
-            <div className="flex-grow-1">
-              <AcademicClass />
-            </div>
-          </div>
-        </div>
+        <AcademicClass />
       </ProtectedRoute>
     ),
   },
@@ -113,15 +87,7 @@ export const academicRoutes = [
     path: "/academic-section",
     element: (
       <ProtectedRoute>
-        <div>
-          <AppNavbar />
-          <div className="d-flex">
-            <Sidebar />
-            <div className="flex-grow-1">
-              <AcademicSection />
-            </div>
-          </div>
-        </div>
+        <AcademicSection />
       </ProtectedRoute>
     ),
   },
@@ -146,15 +112,7 @@ export const academicRoutes = [
     path: "/program-type",
     element: (
       <ProtectedRoute>
-        <div>
-          <AppNavbar />
-          <div className="d-flex">
-            <Sidebar />
-            <div className="flex-grow-1">
-              <ProgramType />
-            </div>
-          </div>
-        </div>
+        <ProgramType />
       </ProtectedRoute>
     ),
   },

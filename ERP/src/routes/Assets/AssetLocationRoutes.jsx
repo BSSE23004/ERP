@@ -1,7 +1,5 @@
 import AssetLocation from "../../pages/Assets/AssetLocation";
 import ProtectedRoute from "../../components/ProtectedRoute";
-import AppNavbar from "../../components/PagesTemplate/Navbar";
-import Sidebar from "../../components/PagesTemplate/Sidebar";
 import AddAssetData from "../../pages/Assets/AddAssetData";
 
 export const AssetLocationRoutes = [
@@ -9,15 +7,7 @@ export const AssetLocationRoutes = [
     path: "/assetlocation",
     element: (
       <ProtectedRoute>
-        <div>
-          <AppNavbar />
-          <div className="d-flex">
-            <Sidebar />
-            <div className="flex-grow-1">
-              <AssetLocation />
-            </div>
-          </div>
-        </div>
+        <AssetLocation />
       </ProtectedRoute>
     ),
   },
@@ -25,15 +15,7 @@ export const AssetLocationRoutes = [
     path: "/addassetlocation",
     element: (
       <ProtectedRoute>
-        <div>
-          <AppNavbar />
-          <div className="d-flex">
-            <Sidebar />
-            <div className="flex-grow-1">
-              <AddAssetData />
-            </div>
-          </div>
-        </div>
+        <AddAssetData />
       </ProtectedRoute>
     ),
   },
@@ -41,15 +23,7 @@ export const AssetLocationRoutes = [
     path: "/editassetlocation/:id",
     element: (
       <ProtectedRoute>
-        <div>
-          <AppNavbar />
-          <div className="d-flex">
-            <Sidebar />
-            <div className="flex-grow-1">
-              <AddAssetData />
-            </div>
-          </div>
-        </div>
+        <AddAssetData />
       </ProtectedRoute>
     ),
   },
