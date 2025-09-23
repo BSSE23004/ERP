@@ -4,5 +4,10 @@
     "jspdf-autotable": "^5.0.2",
     "react-icons": "^5.5.0",
     "xlsx": "^0.18.5"
-  }
+  },
+  "scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview"
+ }
 }
