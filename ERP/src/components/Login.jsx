@@ -10,20 +10,29 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const saved = JSON.parse(localStorage.getItem("testUser") || "{}");
-    if (username === saved.userName && password === saved.password) {
-      localStorage.setItem("isAuthenticated", "true");
-      login();
+    setError("");
+    setIsLoading(true);
+
+    try {
+      // Call the login function from AuthContext which calls Django API
+      await login(username, password);
       navigate("/home", { replace: true });
-    } else {
-      setError("Invalid username or password");
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.error || "Login failed. Please try again.";
+      setError(errorMessage);
+      setPassword(""); // Clear password on error
+    } finally {
+      setIsLoading(false);
     }
   };
+
   return (
     <div className="right-panel flex-fill bg-white d-flex flex-column align-items-center justify-content-center p-5">
       <div className="logo mb-3">
@@ -35,6 +44,11 @@ const Login = () => {
         />
       </div>
       <form onSubmit={handleSubmit} className="w-100" style={{ maxWidth: 400 }}>
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
         <div className="mb-3">
           <label htmlFor="username" className="form-label">
             Username
@@ -47,8 +61,10 @@ const Login = () => {
             placeholder="Enter Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            disabled={isLoading}
+            required
+            autoComplete="username"
           />
-          <span className="text-danger"></span>
         </div>
         <div className="mb-3">
           <label htmlFor="userpassword" className="form-label">
@@ -63,6 +79,9 @@ const Login = () => {
               placeholder="Enter Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
+              required
+              autoComplete="current-password"
             />
             <span
               className="input-group-text bg-transparent"
@@ -72,7 +91,6 @@ const Login = () => {
               <i className={`bx ${showPassword ? "bx-show" : "bx-hide"}`}></i>
             </span>
           </div>
-          <span className="text-danger"></span>
         </div>
         <div className="form-check form-switch mb-3">
           <input
@@ -81,6 +99,7 @@ const Login = () => {
             id="flexSwitchCheckChecked"
             name="remember_me"
             defaultChecked
+            disabled={isLoading}
           />
           <label className="form-check-label" htmlFor="flexSwitchCheckChecked">
             Remember Me
@@ -91,11 +110,28 @@ const Login = () => {
             type="submit"
             className="btn w-100"
             style={{ backgroundColor: "#ff6600", color: "#fff" }}
+            disabled={isLoading}
           >
-            Sign in
+            {isLoading ? "Signing in..." : "Sign in"}
           </button>
         </div>
       </form>
+
+      {/* Test credentials info */}
+      <div
+        className="mt-4 p-3 bg-light"
+        style={{ borderRadius: "5px", maxWidth: 400, fontSize: "12px" }}
+      >
+        <p className="mb-2 text-muted">
+          <strong>Test Credentials:</strong>
+        </p>
+        <p className="mb-1">
+          <strong>Admin:</strong> admin / admin123
+        </p>
+        <p>
+          <strong>Demo:</strong> demo / demo123
+        </p>
+      </div>
     </div>
   );
 };
