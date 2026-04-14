@@ -1,56 +1,71 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAPI } from "../../hooks/useAPI";
 import Sidebar from "../../components/PagesTemplate/Sidebar";
 import AppNavbar from "../../components/PagesTemplate/Navbar";
 import DataHeader from "../../components/PagesTemplate/DataHeader";
 import DataControls from "../../components/PagesTemplate/DataControls";
 import DataTable from "../../components/PagesTemplate/DataTable";
-import { useNavigate } from "react-router-dom";
 
 export default function AcademicProgram() {
   const navigate = useNavigate();
-  const LOCAL_KEY = "academic_programs";
-  // Load from localStorage
-  const storedPrograms = localStorage.getItem(LOCAL_KEY);
-  const initialPrograms = storedPrograms ? JSON.parse(storedPrograms) : [];
-  const [programs, setPrograms] = useState(initialPrograms);
+
+  // Use custom hook to manage API data
+  const {
+    data: programs,
+    loading,
+    error,
+    delete: deleteProgram,
+    refetch,
+  } = useAPI("/api/academics/programs/");
+
   const [showModal, setShowModal] = useState(false);
   const [programToDelete, setProgramToDelete] = useState(null);
   const [search, setSearch] = useState("");
   const [showCount, setShowCount] = useState(10);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(programs));
-  }, [programs]);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Filtering logic
   const filtered = programs.filter(
     (p) =>
-      p.code?.toLowerCase().includes(search.toLowerCase()) ||
-      p.name?.toLowerCase().includes(search.toLowerCase()) ||
-      p.programType?.toLowerCase().includes(search.toLowerCase()) ||
-      String(p.programFee)?.toLowerCase().includes(search.toLowerCase()) ||
-      p.description?.toLowerCase().includes(search.toLowerCase())
+      (p.code || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.program_type || "").toLowerCase().includes(search.toLowerCase()) ||
+      String(p.program_fee || "")
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      (p.description || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleAdd = () => {
     navigate("/addacademicprogram");
   };
+
   const handleEdit = (program) => {
-    navigate(`/editacademicprogram/${program.code}`);
+    navigate(`/editacademicprogram/${program.id}`);
   };
+
   const handleDelete = (program) => {
     setProgramToDelete(program);
     setShowModal(true);
   };
-  const confirmDelete = () => {
+
+  const confirmDelete = async () => {
     if (programToDelete) {
-      const updated = programs.filter((p) => p.code !== programToDelete.code);
-      setPrograms(updated);
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
-      setShowModal(false);
-      setProgramToDelete(null);
+      try {
+        await deleteProgram(programToDelete.id);
+        setSuccessMessage("Program deleted successfully");
+        setTimeout(() => setSuccessMessage(""), 3000);
+        setShowModal(false);
+        setProgramToDelete(null);
+      } catch (err) {
+        setErrorMessage(err.message || "Failed to delete program");
+        setTimeout(() => setErrorMessage(""), 3000);
+      }
     }
   };
+
   const closeModal = () => {
     setShowModal(false);
     setProgramToDelete(null);
@@ -59,11 +74,52 @@ export default function AcademicProgram() {
   const columns = [
     { field: "code", header: "Code", sortable: true },
     { field: "name", header: "Name", sortable: true },
-    { field: "programType", header: "Program Type", sortable: true },
-    { field: "programFee", header: "Program Fee", sortable: true },
+    { field: "program_type", header: "Program Type", sortable: true },
+    { field: "program_fee", header: "Program Fee", sortable: true },
     { field: "description", header: "Description" },
     { field: "status", header: "Status", sortable: true },
   ];
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-info">Loading programs...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error && !successMessage) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-danger">
+              Error loading programs: {error}
+            </div>
+            <button className="btn btn-primary" onClick={refetch}>
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="d-flex flex-row justify-content-start vw-100">
@@ -74,6 +130,36 @@ export default function AcademicProgram() {
       >
         <AppNavbar />
         <div style={{ marginTop: 50, padding: "2rem" }}>
+          {/* Success Message */}
+          {successMessage && (
+            <div
+              className="alert alert-success alert-dismissible fade show"
+              role="alert"
+            >
+              {successMessage}
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setSuccessMessage("")}
+              ></button>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {errorMessage && (
+            <div
+              className="alert alert-danger alert-dismissible fade show"
+              role="alert"
+            >
+              {errorMessage}
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setErrorMessage("")}
+              ></button>
+            </div>
+          )}
+
           <DataHeader
             title="Academic Program List"
             subtitle="Manage Your Academic Program"

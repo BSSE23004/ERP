@@ -1,54 +1,64 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAPI } from "../../hooks/useAPI";
 import Sidebar from "../../components/PagesTemplate/Sidebar";
 import AppNavbar from "../../components/PagesTemplate/Navbar";
 import DataHeader from "../../components/PagesTemplate/DataHeader";
 import DataControls from "../../components/PagesTemplate/DataControls";
 import DataTable from "../../components/PagesTemplate/DataTable";
-import { useNavigate } from "react-router-dom";
 
 export default function AcademicSection() {
   const navigate = useNavigate();
-  const LOCAL_KEY = "academic_sections";
-  // Load from localStorage
-  const storedSections = localStorage.getItem(LOCAL_KEY);
-  const initialSections = storedSections ? JSON.parse(storedSections) : [];
-  const [sections, setSections] = useState(initialSections);
+
+  // Use custom hook to manage API data
+  const {
+    data: sections,
+    loading,
+    error,
+    delete: deleteSection,
+    refetch,
+  } = useAPI("/api/academics/sections/");
+
   const [showModal, setShowModal] = useState(false);
   const [sectionToDelete, setSectionToDelete] = useState(null);
   const [search, setSearch] = useState("");
   const [showCount, setShowCount] = useState(10);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(sections));
-  }, [sections]);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Filtering logic
   const filtered = sections.filter(
     (s) =>
-      s.code?.toLowerCase().includes(search.toLowerCase()) ||
-      s.name?.toLowerCase().includes(search.toLowerCase()) ||
-      s.description?.toLowerCase().includes(search.toLowerCase())
+      (s.code || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (s.description || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleAdd = () => {
     navigate("/addacademicsection");
   };
   const handleEdit = (item) => {
-    navigate(`/editacademicsection/${item.code}`);
+    navigate(`/editacademicsection/${item.id}`);
   };
   const handleDelete = (item) => {
     setSectionToDelete(item);
     setShowModal(true);
   };
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (sectionToDelete) {
-      const updated = sections.filter((s) => s.code !== sectionToDelete.code);
-      setSections(updated);
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
-      setShowModal(false);
-      setSectionToDelete(null);
+      try {
+        await deleteSection(sectionToDelete.id);
+        setSuccessMessage("Section deleted successfully");
+        setTimeout(() => setSuccessMessage(""), 3000);
+        setShowModal(false);
+        setSectionToDelete(null);
+      } catch (err) {
+        setErrorMessage(err.message || "Failed to delete section");
+        setTimeout(() => setErrorMessage(""), 3000);
+      }
     }
   };
+
   const closeModal = () => {
     setShowModal(false);
     setSectionToDelete(null);
@@ -61,6 +71,47 @@ export default function AcademicSection() {
     { field: "status", header: "Status", sortable: true },
   ];
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-info">Loading sections...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error && !successMessage) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-danger">
+              Error loading sections: {error}
+            </div>
+            <button className="btn btn-primary" onClick={refetch}>
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="d-flex flex-row justify-content-start vw-100">
       <Sidebar />
@@ -70,6 +121,36 @@ export default function AcademicSection() {
       >
         <AppNavbar />
         <div style={{ marginTop: 50, padding: "2rem" }}>
+          {/* Success Message */}
+          {successMessage && (
+            <div
+              className="alert alert-success alert-dismissible fade show"
+              role="alert"
+            >
+              {successMessage}
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setSuccessMessage("")}
+              ></button>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {errorMessage && (
+            <div
+              className="alert alert-danger alert-dismissible fade show"
+              role="alert"
+            >
+              {errorMessage}
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setErrorMessage("")}
+              ></button>
+            </div>
+          )}
+
           <DataHeader
             title="Academic Section List"
             subtitle="Manage Your Academic Section"
@@ -104,7 +185,7 @@ export default function AcademicSection() {
               <div className="modal-content">
                 <div className="modal-header" style={{ background: "#f50031" }}>
                   <h5 className="modal-title text-white">
-                    Are you sure want to delete?
+                    Are you sure you want to delete?
                   </h5>
                 </div>
                 <div className="modal-footer d-flex justify-content-center gap-3">

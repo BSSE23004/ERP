@@ -57,7 +57,6 @@ INSTALLED_APPS = [
 
     # Local apps
     'users',
-    'home',
     'academics',
 ]
 
