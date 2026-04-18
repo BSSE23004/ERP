@@ -1,61 +1,92 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAPI } from "../../hooks/useAPI";
+import api from "../../services/api";
 
 export default function AcademicClassForm({ id }) {
   const navigate = useNavigate();
-  let LOCAL_KEY = "academic_classes";
-  const storedItems = localStorage.getItem(LOCAL_KEY);
-  const initialItems = storedItems ? JSON.parse(storedItems) : [];
-  const editingItem = id ? initialItems.find((item) => item.code === id) : null;
-  const getNextCode = () => {
-    if (!initialItems.length) return "CL-0001";
-    const last = initialItems[initialItems.length - 1]?.code;
-    if (!last) return "CL-0001";
-    const num = parseInt(last.split("-")[1], 10) + 1;
-    return `CL-${num.toString().padStart(4, "0")}`;
-  };
-  const [code, setCode] = useState(
-    editingItem ? editingItem.code : getNextCode()
+  const { id: routeId } = useParams();
+  const formId = id || routeId;
+
+  // Fetch all classes to get editing item if needed
+  const { data: classes, loading: loadingClasses } = useAPI(
+    "/api/academics/classes/",
   );
-  const [name, setName] = useState(editingItem ? editingItem.name : "");
-  const [description, setDescription] = useState(
-    editingItem ? editingItem.description : ""
-  );
-  const [status, setStatus] = useState(
-    editingItem ? editingItem.status === "Active" : true
-  );
+  const editingItem = formId ? classes.find((item) => item.id == formId) : null;
+
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState(true);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Populate form when editing
   useEffect(() => {
     if (editingItem) {
       setCode(editingItem.code);
       setName(editingItem.name);
-      setDescription(editingItem.description);
+      setDescription(editingItem.description || "");
       setStatus(editingItem.status === "Active");
     }
-  }, [id]);
-  const handleSave = (e) => {
+  }, [editingItem]);
+
+  const handleSave = async (e) => {
     e.preventDefault();
+    setError("");
+
     if (!name.trim()) {
       setError("Name is required");
       return;
     }
-    let newItem = {
-      code,
+
+    if (!code.trim()) {
+      setError("Code is required");
+      return;
+    }
+
+    const formData = {
+      code: code.trim(),
       name: name.trim(),
       description: description.trim(),
       status: status ? "Active" : "Inactive",
     };
-    let updated;
-    if (editingItem) {
-      updated = initialItems.map((s) =>
-        s.code === editingItem.code ? newItem : s
-      );
-    } else {
-      updated = [...initialItems, newItem];
+
+    try {
+      setIsSubmitting(true);
+
+      if (editingItem) {
+        // Update existing class
+        await api.put(`/api/academics/classes/${editingItem.id}/`, formData);
+      } else {
+        // Create new class
+        await api.post("/api/academics/classes/", formData);
+      }
+
+      // Success - navigate back to list
+      navigate("/academic-class");
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.response?.data?.non_field_errors?.[0] ||
+        err.message ||
+        "Failed to save class";
+      setError(errorMsg);
+      console.error("Save error:", err);
+    } finally {
+      setIsSubmitting(false);
     }
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
-    navigate("/academic-class");
   };
+  if (loadingClasses && formId) {
+    return (
+      <>
+        <h3 className="mb-4">Loading...</h3>
+        <div className="alert alert-info">Fetching class details...</div>
+      </>
+    );
+  }
+
   return (
     <>
       <h3 className="mb-4">
@@ -70,6 +101,7 @@ export default function AcademicClassForm({ id }) {
               className="form-control"
               value={code}
               onChange={(e) => setCode(e.target.value)}
+              disabled={isSubmitting || loadingClasses}
               required
             />
           </div>
@@ -80,6 +112,7 @@ export default function AcademicClassForm({ id }) {
               className="form-control"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              disabled={isSubmitting || loadingClasses}
               required
             />
           </div>
@@ -91,6 +124,7 @@ export default function AcademicClassForm({ id }) {
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            disabled={isSubmitting || loadingClasses}
           />
         </div>
         <div className="mb-4">
@@ -100,6 +134,7 @@ export default function AcademicClassForm({ id }) {
             className="form-check-input"
             checked={status}
             onChange={(e) => setStatus(e.target.checked)}
+            disabled={isSubmitting || loadingClasses}
           />
           <span className="ms-2">{status ? "Active" : "Inactive"}</span>
         </div>
@@ -109,13 +144,21 @@ export default function AcademicClassForm({ id }) {
             type="submit"
             className="btn text-white px-4"
             style={{ backgroundColor: "#ff6600" }}
+            disabled={isSubmitting || loadingClasses}
           >
-            {editingItem ? "Update" : "Save"}
+            {isSubmitting
+              ? editingItem
+                ? "Updating..."
+                : "Saving..."
+              : editingItem
+                ? "Update"
+                : "Save"}
           </button>
           <button
             type="button"
             className="btn btn-dark px-4"
             onClick={() => navigate("/academic-class")}
+            disabled={isSubmitting}
           >
             Back
           </button>
