@@ -33,6 +33,7 @@ export const useAPI = (endpoint) => {
    * Fetch data on component mount
    */
   useEffect(() => {
+    console.log(`useAPI: Fetching from ${endpoint}`);
     fetchData();
   }, [endpoint]);
 

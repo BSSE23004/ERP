@@ -1,59 +1,76 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 export default function JournalVoucherForm({ id }) {
   const navigate = useNavigate();
+  const {
+    data: allVouchers,
+    loading,
+    error: fetchError,
+    create,
+    update,
+  } = useAPI("/api/accounts/journalvoucher/");
+
   const [bookingDate, setBookingDate] = useState("");
   const [voucherNo, setVoucherNo] = useState("");
   const [documentNo, setDocumentNo] = useState("");
   const [status, setStatus] = useState(true);
   const [error, setError] = useState("");
-  const LOCAL_KEY = "journal_vouchers";
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const editingItem =
+    id && allVouchers
+      ? allVouchers.find((item) => item.id === parseInt(id))
+      : null;
 
   useEffect(() => {
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    if (id) {
-      const voucher = items.find((v) => v.voucherNo === id);
-      if (voucher) {
-        setBookingDate(voucher.bookingDate || "");
-        setVoucherNo(voucher.voucherNo || "");
-        setDocumentNo(voucher.documentNo || "");
-        setStatus(voucher.status === "Active");
-      }
+    if (editingItem) {
+      setBookingDate(editingItem.booking_date);
+      setVoucherNo(editingItem.voucher_no);
+      setDocumentNo(editingItem.document_no);
+      setStatus(editingItem.status === "Active");
     } else {
       const today = new Date();
       const dateStr = today.toISOString().slice(0, 10).replace(/-/g, "");
       setBookingDate(today.toISOString().slice(0, 10));
-      const count = items.length + 1;
+      const count = (allVouchers?.length || 0) + 1;
       setVoucherNo(`JV-${dateStr}-${count}`);
       setDocumentNo(`JV-${dateStr}-${count}`);
     }
-  }, [id]);
+  }, [id, allVouchers, editingItem]);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!bookingDate || !voucherNo || !documentNo) {
       setError("Please fill all required fields");
       return;
     }
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    const newItem = {
-      bookingDate,
-      voucherNo,
-      documentNo,
-      status: status ? "Active" : "Inactive",
-    };
-    let updatedItems;
-    if (id) {
-      updatedItems = items.map((v) => (v.voucherNo === id ? newItem : v));
-    } else {
-      updatedItems = [...items, newItem];
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        booking_date: bookingDate,
+        voucher_no: voucherNo,
+        document_no: documentNo,
+        status: status ? "Active" : "Inactive",
+      };
+
+      if (editingItem) {
+        await update(editingItem.id, payload);
+      } else {
+        await create(payload);
+      }
+      navigate("/journal-voucher");
+    } catch (err) {
+      setError(err.message || "Failed to save voucher");
+      console.error("Save error:", err);
+    } finally {
+      setIsSubmitting(false);
     }
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
-    navigate("/journal-voucher");
   };
+  if (loading) {
+    return <div className="alert alert-info">Loading...</div>;
+  }
 
   return (
     <>
@@ -110,13 +127,15 @@ export default function JournalVoucherForm({ id }) {
             type="submit"
             className="btn text-white px-4"
             style={{ backgroundColor: "#ff6600" }}
+            disabled={isSubmitting}
           >
-            Save
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             className="btn btn-dark px-4"
             onClick={() => navigate(-1)}
+            disabled={isSubmitting}
           >
             Back
           </button>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 const paymentTypeOptions = [
   "CASH",
@@ -20,6 +21,12 @@ const employeeOptions = ["Employee A", "Employee B", "Employee C"];
 
 export default function PaymentForm({ id, isVendor, isCustomer, isEmployee }) {
   const navigate = useNavigate();
+  const {
+    data: itemData,
+    create: createItem,
+    update: updateItem,
+  } = useAPI("/api/accounts/payment/");
+
   const [grn, setGrn] = useState("");
   const [vendor, setVendor] = useState("");
   const [bill, setBill] = useState("");
@@ -36,49 +43,53 @@ export default function PaymentForm({ id, isVendor, isCustomer, isEmployee }) {
   const [paymentNote, setPaymentNote] = useState("");
   const [status, setStatus] = useState(true);
   const [error, setError] = useState("");
-  const LOCAL_KEY = isVendor
-    ? "vendor_payments"
-    : isCustomer
-    ? "customer_payments"
-    : isEmployee
-    ? "employee_payments"
-    : "";
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const getPaymentCategory = () => {
+    if (isVendor) return "VENDOR";
+    if (isCustomer) return "CUSTOMER";
+    if (isEmployee) return "EMPLOYEE";
+    return "";
+  };
+
+  const navigatePath = () => {
+    if (isVendor) return "/vendorpayment";
+    if (isCustomer) return "/customerpayment";
+    if (isEmployee) return "/employeepayment";
+    return "/";
+  };
 
   useEffect(() => {
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    let payment;
-    if (id) {
-      if (isCustomer) {
-        payment = items.find((p) => p.code === id);
-      } else {
-        payment = items.find((p) => p.id === id);
-      }
-      if (payment) {
+    if (id && itemData) {
+      const item = Array.isArray(itemData)
+        ? itemData.find((p) => p.id === parseInt(id))
+        : itemData;
+
+      if (item) {
         if (isVendor) {
-          setGrn(payment.grn || "");
-          setVendor(payment.vendor || "");
+          setGrn(item.grn || "");
+          setVendor(item.vendor || "");
         } else if (isCustomer) {
-          setBill(payment.bill || "");
-          setCustomer(payment.customer || "");
+          setBill(item.bill || "");
+          setCustomer(item.customer || "");
         } else if (isEmployee) {
-          setEmployee(payment.employee || "");
+          setEmployee(item.employee || "");
         }
-        setPaymentType(payment.paymentType || paymentTypeOptions[3]);
-        setPaymentDate(payment.paymentDate || "");
-        setBank(payment.bank || "");
-        setBranch(payment.branch || "");
-        setChequeNo(payment.chequeNo || "");
-        setChequeDate(payment.chequeDate || "");
-        setChequeCashDate(payment.chequeCashDate || "");
-        setAmount(payment.amount || "");
-        setPaymentNote(payment.paymentNote || "");
-        setStatus(payment.status === "Active");
+        setPaymentType(item.payment_type || paymentTypeOptions[3]);
+        setPaymentDate(item.payment_date || "");
+        setBank(item.bank || "");
+        setBranch(item.branch || "");
+        setChequeNo(item.cheque_no || "");
+        setChequeDate(item.cheque_date || "");
+        setChequeCashDate(item.cheque_cash_date || "");
+        setAmount(item.amount ? item.amount.toString() : "");
+        setPaymentNote(item.payment_note || "");
+        setStatus(item.status !== "Inactive");
       }
     }
-  }, [id, isVendor, isCustomer, isEmployee]);
+  }, [id, itemData, isVendor, isCustomer, isEmployee]);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (isVendor) {
       if (!vendor || !paymentType || !paymentDate || !amount) {
@@ -96,44 +107,40 @@ export default function PaymentForm({ id, isVendor, isCustomer, isEmployee }) {
         return;
       }
     }
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    const newItem = {
-      id: id || Date.now().toString(),
-      paymentType,
-      paymentDate,
-      bank,
-      branch,
-      chequeNo,
-      chequeDate,
-      chequeCashDate,
-      amount,
-      paymentNote,
-      status: status ? "Active" : "Inactive",
-      ...(isVendor
-        ? { grn, vendor }
-        : isCustomer
-        ? { bill, customer }
-        : isEmployee
-        ? { employee }
-        : {}),
-    };
-    let updatedItems;
-    if (id) {
-      updatedItems = items.map((p) => (p.id === id ? newItem : p));
-    } else {
-      updatedItems = [...items, newItem];
+
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const payload = {
+        payment_category: getPaymentCategory(),
+        payment_type: paymentType,
+        payment_date: paymentDate,
+        bank: bank || null,
+        branch: branch || null,
+        cheque_no: chequeNo || null,
+        cheque_date: chequeDate || null,
+        cheque_cash_date: chequeCashDate || null,
+        amount: parseFloat(amount),
+        payment_note: paymentNote || "",
+        status: status ? "Active" : "Inactive",
+        ...(isVendor && { vendor, grn: grn || null }),
+        ...(isCustomer && { customer, bill: bill || null }),
+        ...(isEmployee && { employee }),
+      };
+
+      if (id) {
+        await updateItem(parseInt(id), payload);
+      } else {
+        await createItem(payload);
+      }
+
+      navigate(navigatePath());
+    } catch (err) {
+      setError(err.message || "Error saving payment");
+    } finally {
+      setIsSubmitting(false);
     }
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
-    navigate(
-      isVendor
-        ? "/vendor-payment"
-        : isCustomer
-        ? "/customer-payment"
-        : isEmployee
-        ? "/employee-payment"
-        : "/"
-    );
   };
 
   return (
@@ -144,14 +151,14 @@ export default function PaymentForm({ id, isVendor, isCustomer, isEmployee }) {
             ? "Edit Vendor Payment"
             : "Create New Vendor Payment"
           : isCustomer
-          ? id
-            ? "Edit Customer Payment"
-            : "Create New Customer Payment"
-          : isEmployee
-          ? id
-            ? "Edit Employee Payment"
-            : "Create New Employee Payment"
-          : ""}
+            ? id
+              ? "Edit Customer Payment"
+              : "Create New Customer Payment"
+            : isEmployee
+              ? id
+                ? "Edit Employee Payment"
+                : "Create New Employee Payment"
+              : ""}
       </h3>
       <form onSubmit={handleSave}>
         <div className="row mb-3">
@@ -367,13 +374,15 @@ export default function PaymentForm({ id, isVendor, isCustomer, isEmployee }) {
             type="submit"
             className="btn text-white px-4"
             style={{ backgroundColor: "#ff6600" }}
+            disabled={isSubmitting}
           >
-            Save
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             className="btn btn-dark px-4"
             onClick={() => navigate(-1)}
+            disabled={isSubmitting}
           >
             Back
           </button>

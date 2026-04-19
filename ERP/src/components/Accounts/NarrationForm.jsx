@@ -1,51 +1,66 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 export default function NarrationForm({ id }) {
   const navigate = useNavigate();
+  const {
+    data: allNarrations,
+    loading,
+    error: fetchError,
+    create,
+    update,
+  } = useAPI("/api/accounts/narration/");
+
   const [narration, setNarration] = useState("");
   const [status, setStatus] = useState(true);
   const [error, setError] = useState("");
-  const LOCAL_KEY = "narrations";
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const editingItem =
+    id && allNarrations
+      ? allNarrations.find((item) => item.id === parseInt(id))
+      : null;
 
   useEffect(() => {
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    if (id) {
-      const narr = items.find((n) => n.id === id);
-      if (narr) {
-        setNarration(narr.narration || "");
-        setStatus(narr.status === "Active");
-      }
+    if (editingItem) {
+      setNarration(editingItem.narration);
+      setStatus(editingItem.status === "Active");
     } else {
       setNarration("");
       setStatus(true);
     }
-  }, [id]);
+  }, [id, allNarrations, editingItem]);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (!narration) {
+    if (!narration.trim()) {
       setError("Please enter narration");
       return;
     }
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    const newItem = {
-      id: id || Date.now().toString(),
-      narration,
-      status: status ? "Active" : "Inactive",
-    };
-    let updatedItems;
-    if (id) {
-      updatedItems = items.map((n) => (n.id === id ? newItem : n));
-    } else {
-      updatedItems = [...items, newItem];
-    }
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
-    navigate("/narration");
-  };
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        narration,
+        status: status ? "Active" : "Inactive",
+      };
 
+      if (editingItem) {
+        await update(editingItem.id, payload);
+      } else {
+        await create(payload);
+      }
+      navigate("/narration");
+    } catch (err) {
+      setError(err.message || "Failed to save narration");
+      console.error("Save error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  if (loading) {
+    return <div className="alert alert-info">Loading...</div>;
+  }
   return (
     <>
       <h3 className="mb-4">{id ? "Edit Narration" : "Create New Narration"}</h3>
@@ -53,11 +68,11 @@ export default function NarrationForm({ id }) {
         <div className="row mb-3">
           <div className="col-md-6 mb-3 mb-md-0">
             <label className="form-label fw-semibold">Narration*</label>
-            <input
-              type="text"
+            <textarea
               className="form-control"
               value={narration}
               onChange={(e) => setNarration(e.target.value)}
+              rows="3"
               required
             />
           </div>
@@ -77,13 +92,15 @@ export default function NarrationForm({ id }) {
             type="submit"
             className="btn text-white px-4"
             style={{ backgroundColor: "#ff6600" }}
+            disabled={isSubmitting}
           >
-            Save
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             className="btn btn-dark px-4"
             onClick={() => navigate(-1)}
+            disabled={isSubmitting}
           >
             Back
           </button>

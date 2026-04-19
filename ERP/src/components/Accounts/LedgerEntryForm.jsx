@@ -1,62 +1,72 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 export default function LedgerEntryForm({ id }) {
   const navigate = useNavigate();
+  const {
+    data: allEntries,
+    loading,
+    error: fetchError,
+    create,
+    update,
+  } = useAPI("/api/accounts/ledgerentry/");
+
   const [documentNo, setDocumentNo] = useState("");
   const [bookingDate, setBookingDate] = useState("");
   const [totalDebit, setTotalDebit] = useState("");
   const [totalCredit, setTotalCredit] = useState("");
   const [status, setStatus] = useState(true);
   const [error, setError] = useState("");
-  const LOCAL_KEY = "ledger_entries";
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const editingItem =
+    id && allEntries
+      ? allEntries.find((item) => item.id === parseInt(id))
+      : null;
 
   useEffect(() => {
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    if (id) {
-      const entry = items.find((e) => e.id === id);
-      if (entry) {
-        setDocumentNo(entry.documentNo || "");
-        setBookingDate(entry.bookingDate || "");
-        setTotalDebit(entry.totalDebit || "");
-        setTotalCredit(entry.totalCredit || "");
-        setStatus(entry.status === "Active");
-      }
-    } else {
-      setDocumentNo("");
-      setBookingDate("");
-      setTotalDebit("");
-      setTotalCredit("");
-      setStatus(true);
+    if (editingItem) {
+      setDocumentNo(editingItem.document_no);
+      setBookingDate(editingItem.booking_date);
+      setTotalDebit(editingItem.total_debit);
+      setTotalCredit(editingItem.total_credit);
+      setStatus(editingItem.status === "Active");
     }
-  }, [id]);
+  }, [id, allEntries, editingItem]);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!documentNo || !bookingDate || !totalDebit || !totalCredit) {
       setError("Please fill all required fields");
       return;
     }
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    const newItem = {
-      id: id || Date.now().toString(),
-      documentNo,
-      bookingDate,
-      totalDebit,
-      totalCredit,
-      status: status ? "Active" : "Inactive",
-    };
-    let updatedItems;
-    if (id) {
-      updatedItems = items.map((e) => (e.id === id ? newItem : e));
-    } else {
-      updatedItems = [...items, newItem];
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        document_no: documentNo,
+        booking_date: bookingDate,
+        total_debit: parseFloat(totalDebit),
+        total_credit: parseFloat(totalCredit),
+        status: status ? "Active" : "Inactive",
+      };
+
+      if (editingItem) {
+        await update(editingItem.id, payload);
+      } else {
+        await create(payload);
+      }
+      navigate("/ledger-entries");
+    } catch (err) {
+      setError(err.message || "Failed to save ledger entry");
+      console.error("Save error:", err);
+    } finally {
+      setIsSubmitting(false);
     }
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
-    navigate("/ledger-entries");
   };
+  if (loading) {
+    return <div className="alert alert-info">Loading...</div>;
+  }
 
   return (
     <>
@@ -89,6 +99,7 @@ export default function LedgerEntryForm({ id }) {
             <label className="form-label fw-semibold">Total Debit*</label>
             <input
               type="number"
+              step="0.01"
               className="form-control"
               value={totalDebit}
               onChange={(e) => setTotalDebit(e.target.value)}
@@ -99,6 +110,7 @@ export default function LedgerEntryForm({ id }) {
             <label className="form-label fw-semibold">Total Credit*</label>
             <input
               type="number"
+              step="0.01"
               className="form-control"
               value={totalCredit}
               onChange={(e) => setTotalCredit(e.target.value)}
@@ -123,13 +135,15 @@ export default function LedgerEntryForm({ id }) {
             type="submit"
             className="btn text-white px-4"
             style={{ backgroundColor: "#ff6600" }}
+            disabled={isSubmitting}
           >
-            Save
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             className="btn btn-dark px-4"
             onClick={() => navigate(-1)}
+            disabled={isSubmitting}
           >
             Back
           </button>

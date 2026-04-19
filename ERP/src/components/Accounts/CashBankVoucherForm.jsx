@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 const bankOptions = ["Habib Bank", "Meezan Bank", "UBL", "MCB"];
 const branchOptions = ["Ibrahim Sattar", "Main Branch", "North Branch"];
@@ -12,6 +13,12 @@ export default function CashBankVoucherForm({
   isBankReceipt,
 }) {
   const navigate = useNavigate();
+  const {
+    data: itemData,
+    create: createItem,
+    update: updateItem,
+  } = useAPI("/api/accounts/cashbankvoucher/");
+
   const [bookingDate, setBookingDate] = useState("");
   const [voucherNo, setVoucherNo] = useState("");
   const [documentNo, setDocumentNo] = useState("");
@@ -20,42 +27,43 @@ export default function CashBankVoucherForm({
   const [branch, setBranch] = useState("");
   const [status, setStatus] = useState(true);
   const [error, setError] = useState("");
-  const LOCAL_KEY = isCashPayment
-    ? "cash_payment_vouchers"
-    : isCashReceipt
-    ? "cash_receipt_vouchers"
-    : isBankPayment
-    ? "bank_payment_vouchers"
-    : isBankReceipt
-    ? "bank_receipt_vouchers"
-    : "";
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const getVoucherType = () => {
+    if (isCashPayment) return "CASH_PAYMENT";
+    if (isCashReceipt) return "CASH_RECEIPT";
+    if (isBankPayment) return "BANK_PAYMENT";
+    if (isBankReceipt) return "BANK_RECEIPT";
+    return "";
+  };
+
+  const navigatePath = () => {
+    if (isCashPayment) return "/cashpaymentvoucher";
+    if (isCashReceipt) return "/cashreceiptvoucher";
+    if (isBankPayment) return "/bankpaymentvoucher";
+    if (isBankReceipt) return "/bankreceiptvoucher";
+    return "/";
+  };
 
   useEffect(() => {
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    if (id) {
-      const voucher = items.find((v) => v.id === id);
-      if (voucher) {
-        setBookingDate(voucher.bookingDate || "");
-        setVoucherNo(voucher.voucherNo || "");
-        setDocumentNo(voucher.documentNo || "");
-        setTotalAmount(voucher.totalAmount || "");
-        setBank(voucher.bank || "");
-        setBranch(voucher.branch || "");
-        setStatus(voucher.status === "Active");
-      }
-    } else {
-      setBookingDate("");
-      setVoucherNo("");
-      setDocumentNo("");
-      setTotalAmount("");
-      setBank("");
-      setBranch("");
-      setStatus(true);
-    }
-  }, [id, LOCAL_KEY]);
+    if (id && itemData) {
+      const item = Array.isArray(itemData)
+        ? itemData.find((v) => v.id === parseInt(id))
+        : itemData;
 
-  const handleSave = (e) => {
+      if (item) {
+        setBookingDate(item.booking_date || "");
+        setVoucherNo(item.voucher_no || "");
+        setDocumentNo(item.document_no || "");
+        setTotalAmount(item.total_amount ? item.total_amount.toString() : "");
+        setBank(item.bank || "");
+        setBranch(item.branch || "");
+        setStatus(item.status !== "Inactive");
+      }
+    }
+  }, [id, itemData]);
+
+  const handleSave = async (e) => {
     e.preventDefault();
     if (
       !bookingDate ||
@@ -67,34 +75,34 @@ export default function CashBankVoucherForm({
       setError("Please fill all required fields");
       return;
     }
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    const newItem = {
-      id: id || Date.now().toString(),
-      bookingDate,
-      voucherNo,
-      documentNo,
-      totalAmount,
-      bank: isBankPayment || isBankReceipt ? bank : undefined,
-      branch: isBankPayment || isBankReceipt ? branch : undefined,
-      status: status ? "Active" : "Inactive",
-    };
-    let updatedItems;
-    if (id) {
-      updatedItems = items.map((v) => (v.id === id ? newItem : v));
-    } else {
-      updatedItems = [...items, newItem];
+
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const payload = {
+        booking_date: bookingDate,
+        voucher_no: voucherNo,
+        document_no: documentNo,
+        total_amount: parseFloat(totalAmount),
+        voucher_type: getVoucherType(),
+        bank: isBankPayment || isBankReceipt ? bank : null,
+        branch: isBankPayment || isBankReceipt ? branch : null,
+        status: status ? "Active" : "Inactive",
+      };
+
+      if (id) {
+        await updateItem(parseInt(id), payload);
+      } else {
+        await createItem(payload);
+      }
+
+      navigate(navigatePath());
+    } catch (err) {
+      setError(err.message || "Error saving voucher");
+    } finally {
+      setIsSubmitting(false);
     }
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
-    navigate(
-      isCashPayment
-        ? "/cash-payment-voucher"
-        : isCashReceipt
-        ? "/cash-receipt-voucher"
-        : isBankPayment
-        ? "/bank-payment-voucher"
-        : "/bank-receipt-voucher"
-    );
   };
 
   return (
@@ -105,18 +113,18 @@ export default function CashBankVoucherForm({
             ? "Edit Cash Payment Voucher"
             : "Create New Cash Payment Voucher"
           : isCashReceipt
-          ? id
-            ? "Edit Cash Receipt Voucher"
-            : "Create New Cash Receipt Voucher"
-          : isBankPayment
-          ? id
-            ? "Edit Bank Payment Voucher"
-            : "Create New Bank Payment Voucher"
-          : isBankReceipt
-          ? id
-            ? "Edit Bank Receipt Voucher"
-            : "Create New Bank Receipt Voucher"
-          : ""}
+            ? id
+              ? "Edit Cash Receipt Voucher"
+              : "Create New Cash Receipt Voucher"
+            : isBankPayment
+              ? id
+                ? "Edit Bank Payment Voucher"
+                : "Create New Bank Payment Voucher"
+              : isBankReceipt
+                ? id
+                  ? "Edit Bank Receipt Voucher"
+                  : "Create New Bank Receipt Voucher"
+                : ""}
       </h3>
       <form onSubmit={handleSave}>
         <div className="row mb-3">
@@ -214,13 +222,15 @@ export default function CashBankVoucherForm({
             type="submit"
             className="btn text-white px-4"
             style={{ backgroundColor: "#ff6600" }}
+            disabled={isSubmitting}
           >
-            Save
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             className="btn btn-dark px-4"
             onClick={() => navigate(-1)}
+            disabled={isSubmitting}
           >
             Back
           </button>

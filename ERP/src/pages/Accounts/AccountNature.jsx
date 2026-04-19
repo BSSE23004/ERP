@@ -5,49 +5,53 @@ import DataHeader from "../../components/PagesTemplate/DataHeader";
 import DataControls from "../../components/PagesTemplate/DataControls";
 import DataTable from "../../components/PagesTemplate/DataTable";
 import { useNavigate } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 export default function AccountNature() {
   const navigate = useNavigate();
-  const LOCAL_KEY = "account_nature";
-  // Load from localStorage
-  const storedNature = localStorage.getItem(LOCAL_KEY);
-  const initialNature = storedNature ? JSON.parse(storedNature) : [];
-  const [nature, setNature] = useState(initialNature);
-  const [showModal, setShowModal] = useState(false);
-  const [natureToDelete, setNatureToDelete] = useState(null);
+  const {
+    data: natures,
+    loading,
+    error,
+    delete: deleteItem,
+  } = useAPI("/api/accounts/accountnature/");
   const [search, setSearch] = useState("");
   const [showCount, setShowCount] = useState(10);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(nature));
-  }, [nature]);
+  const [showModal, setShowModal] = useState(false);
+  const [natureToDelete, setNatureToDelete] = useState(null);
 
   // Filtering logic
-  const filtered = nature.filter(
+  const filtered = natures.filter(
     (n) =>
       n.name?.toLowerCase().includes(search.toLowerCase()) ||
-      n.description?.toLowerCase().includes(search.toLowerCase())
+      n.description?.toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleAdd = () => {
     navigate("/addaccountnature");
   };
+
   const handleEdit = (item) => {
-    navigate(`/editaccountnature/${item.code}`);
+    navigate(`/editaccountnature/${item.id}`);
   };
+
   const handleDelete = (item) => {
     setNatureToDelete(item);
     setShowModal(true);
   };
-  const confirmDelete = () => {
-    if (natureToDelete && natureToDelete.code !== undefined) {
-      const updated = nature.filter((n) => n.code !== natureToDelete.code);
-      setNature(updated);
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
+
+  const confirmDelete = async () => {
+    if (natureToDelete && natureToDelete.id !== undefined) {
+      try {
+        await deleteItem(natureToDelete.id);
+        setShowModal(false);
+        setNatureToDelete(null);
+      } catch (err) {
+        console.error("Delete failed:", err);
+      }
     }
-    setShowModal(false);
-    setNatureToDelete(null);
   };
+
   const closeModal = () => {
     setShowModal(false);
     setNatureToDelete(null);
@@ -58,6 +62,40 @@ export default function AccountNature() {
     { field: "description", header: "Description" },
     { field: "status", header: "Status", sortable: true },
   ];
+
+  if (loading) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-info">Loading account natures...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-danger">Error: {error}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="d-flex flex-row justify-content-start vw-100">
@@ -70,7 +108,7 @@ export default function AccountNature() {
         <div style={{ marginTop: 50, padding: "2rem" }}>
           <DataHeader
             title="Account Nature List"
-            subtitle="Manage Your Account Nature"
+            subtitle="Manage Your Account Natures"
             onAdd={handleAdd}
             buttonText="Add New Account Nature"
           />
@@ -80,7 +118,7 @@ export default function AccountNature() {
             search={search}
             setSearch={setSearch}
             data={filtered}
-            title="Account Nature"
+            title="Account Natures"
             columns={columns}
           />
           <DataTable

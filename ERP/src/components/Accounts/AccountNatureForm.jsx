@@ -1,67 +1,101 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 export default function AccountNatureForm({ id }) {
   const navigate = useNavigate();
-  let LOCAL_KEY = "account_nature";
-  const storedItems = localStorage.getItem(LOCAL_KEY);
-  const initialItems = storedItems ? JSON.parse(storedItems) : [];
-  const editingItem = id ? initialItems.find((item) => item.code === id) : null;
-  const getNextCode = () => {
-    if (!initialItems.length) return "AN-0001";
-    const last = initialItems[initialItems.length - 1]?.code;
-    if (!last) return "AN-0001";
-    const num = parseInt(last.split("-")[1], 10) + 1;
-    return `AN-${num.toString().padStart(4, "0")}`;
-  };
-  const [code, setCode] = useState(
-    editingItem ? editingItem.code : getNextCode()
-  );
-  const [name, setName] = useState(editingItem ? editingItem.name : "");
-  const [description, setDescription] = useState(
-    editingItem ? editingItem.description : ""
-  );
-  const [status, setStatus] = useState(
-    editingItem ? editingItem.status === "Active" : true
-  );
+  const {
+    data: allNatures,
+    loading,
+    error: fetchError,
+    create,
+    update,
+  } = useAPI("/api/accounts/accountnature/");
+
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState(true);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const editingItem =
+    id && allNatures
+      ? allNatures.find((item) => item.id === parseInt(id))
+      : null;
+
   useEffect(() => {
     if (editingItem) {
       setCode(editingItem.code);
       setName(editingItem.name);
-      setDescription(editingItem.description);
+      setDescription(editingItem.description || "");
       setStatus(editingItem.status === "Active");
+    } else {
+      // Generate next code
+      if (allNatures && allNatures.length > 0) {
+        const lastCode = allNatures[allNatures.length - 1]?.code;
+        if (lastCode && lastCode.includes("-")) {
+          const num = parseInt(lastCode.split("-")[1], 10) + 1;
+          setCode(`AN-${num.toString().padStart(4, "0")}`);
+        } else {
+          setCode("AN-0001");
+        }
+      } else {
+        setCode("AN-0001");
+      }
     }
-  }, [id]);
-  const handleSave = (e) => {
+  }, [id, allNatures, editingItem]);
+
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!name.trim()) {
       setError("Name is required");
       return;
     }
-    let newItem = {
-      code,
-      name: name.trim(),
-      description: description.trim(),
-      status: status ? "Active" : "Inactive",
-    };
-    let updated;
-    if (editingItem) {
-      updated = initialItems.map((s) =>
-        s.code === editingItem.code ? newItem : s
-      );
-    } else {
-      updated = [...initialItems, newItem];
+
+    setIsSubmitting(true);
+    try {
+      const itemData = {
+        code,
+        name: name.trim(),
+        description: description.trim(),
+        status: status ? "Active" : "Inactive",
+      };
+
+      if (editingItem) {
+        await update(editingItem.id, itemData);
+      } else {
+        await create(itemData);
+      }
+      navigate("/account-nature");
+    } catch (err) {
+      setError(err.response?.data?.detail || "Failed to save account nature");
+      console.error("Save error:", err);
+    } finally {
+      setIsSubmitting(false);
     }
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
-    navigate("/account-nature");
   };
+
+  if (loading) {
+    return <div className="alert alert-info">Loading...</div>;
+  }
+
   return (
     <>
       <h3 className="mb-4">
         {editingItem ? "Edit Account Nature" : "Create New Account Nature"}
       </h3>
       <form onSubmit={handleSave}>
+        <div className="mb-3">
+          <label className="form-label fw-semibold">Code</label>
+          <input
+            type="text"
+            className="form-control"
+            value={code}
+            disabled
+            readOnly
+          />
+        </div>
         <div className="mb-3">
           <label className="form-label fw-semibold">Name*</label>
           <input
@@ -91,19 +125,23 @@ export default function AccountNatureForm({ id }) {
           />
           <span className="ms-2">{status ? "Active" : "Inactive"}</span>
         </div>
-        {error && <div className="alert alert-danger py-2">{error}</div>}
+        {(error || fetchError) && (
+          <div className="alert alert-danger py-2">{error || fetchError}</div>
+        )}
         <div className="d-flex gap-2">
           <button
             type="submit"
             className="btn text-white px-4"
             style={{ backgroundColor: "#ff6600" }}
+            disabled={isSubmitting}
           >
-            {editingItem ? "Update" : "Save"}
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             className="btn btn-dark px-4"
-            onClick={() => navigate("/account-nature")}
+            onClick={() => navigate(-1)}
+            disabled={isSubmitting}
           >
             Back
           </button>

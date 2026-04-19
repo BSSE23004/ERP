@@ -1,69 +1,84 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 export default function VoucherTypeForm({ id }) {
   const navigate = useNavigate();
+  const {
+    data: allTypes,
+    loading,
+    error: fetchError,
+    create,
+    update,
+  } = useAPI("/api/accounts/vouchertype/");
+
   const [vtCode, setVtCode] = useState("");
   const [vtName, setVtName] = useState("");
   const [vtStatus, setVtStatus] = useState(true);
   const [error, setError] = useState("");
-  const LOCAL_KEY = "voucher_types";
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const editingItem =
+    id && allTypes ? allTypes.find((item) => item.id === parseInt(id)) : null;
 
   useEffect(() => {
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    if (id) {
-      const vt = items.find((v) => v.id === id);
-      if (vt) {
-        setVtCode(vt.code || "");
-        setVtName(vt.name || "");
-        setVtStatus(vt.status === "Active");
-      }
+    if (editingItem) {
+      setVtCode(editingItem.code);
+      setVtName(editingItem.name);
+      setVtStatus(editingItem.status === "Active");
     } else {
-      if (!items.length) {
-        setVtCode("VT-0001");
-      } else {
-        const last = items[items.length - 1]?.code;
-        if (last) {
-          const num = parseInt(last.split("-")[1]) + 1;
+      // Generate next code
+      if (allTypes && allTypes.length > 0) {
+        const lastCode = allTypes[allTypes.length - 1]?.code;
+        if (lastCode && lastCode.includes("-")) {
+          const num = parseInt(lastCode.split("-")[1], 10) + 1;
           setVtCode(`VT-${num.toString().padStart(4, "0")}`);
         } else {
           setVtCode("VT-0001");
         }
+      } else {
+        setVtCode("VT-0001");
       }
-      setVtName("");
-      setVtStatus(true);
     }
-  }, [id]);
+  }, [id, allTypes, editingItem]);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!vtCode || !vtName) {
       setError("Please fill all required fields");
       return;
     }
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    const newItem = {
-      id: id || Date.now().toString(),
-      code: vtCode,
-      name: vtName,
-      status: vtStatus ? "Active" : "Inactive",
-    };
-    let updatedItems;
-    if (id) {
-      updatedItems = items.map((v) => (v.id === id ? newItem : v));
-    } else {
-      updatedItems = [...items, newItem];
+
+    setIsSubmitting(true);
+    try {
+      const itemData = {
+        code: vtCode,
+        name: vtName,
+        status: vtStatus ? "Active" : "Inactive",
+      };
+
+      if (editingItem) {
+        await update(editingItem.id, itemData);
+      } else {
+        await create(itemData);
+      }
+      navigate("/voucher-type");
+    } catch (err) {
+      setError(err.response?.data?.detail || "Failed to save voucher type");
+      console.error("Save error:", err);
+    } finally {
+      setIsSubmitting(false);
     }
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
-    navigate("/voucher-type");
   };
+
+  if (loading) {
+    return <div className="alert alert-info">Loading...</div>;
+  }
 
   return (
     <>
       <h3 className="mb-4">
-        {id ? "Edit Voucher Type" : "Create New Voucher Type"}
+        {editingItem ? "Edit Voucher Type" : "Create New Voucher Type"}
       </h3>
       <form onSubmit={handleSave}>
         <div className="row mb-3">
@@ -98,19 +113,23 @@ export default function VoucherTypeForm({ id }) {
             />
           </div>
         </div>
-        {error && <div className="alert alert-danger py-2">{error}</div>}
+        {(error || fetchError) && (
+          <div className="alert alert-danger py-2">{error || fetchError}</div>
+        )}
         <div className="d-flex gap-2">
           <button
             type="submit"
             className="btn text-white px-4"
             style={{ backgroundColor: "#ff6600" }}
+            disabled={isSubmitting}
           >
-            Save
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             className="btn btn-dark px-4"
             onClick={() => navigate(-1)}
+            disabled={isSubmitting}
           >
             Back
           </button>

@@ -1,56 +1,63 @@
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import AppNavbar from "../../components/PagesTemplate/Navbar";
+import React, { useState } from "react";
 import Sidebar from "../../components/PagesTemplate/Sidebar";
+import AppNavbar from "../../components/PagesTemplate/Navbar";
 import DataHeader from "../../components/PagesTemplate/DataHeader";
 import DataControls from "../../components/PagesTemplate/DataControls";
 import DataTable from "../../components/PagesTemplate/DataTable";
+import { useNavigate } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 export default function CustomerPayment() {
   const navigate = useNavigate();
-  const LOCAL_KEY = "customer_payments";
-  const storedPayments = localStorage.getItem(LOCAL_KEY);
-  const initialPayments = storedPayments ? JSON.parse(storedPayments) : [];
-  const [payments, setPayments] = useState(initialPayments);
-  const [showModal, setShowModal] = useState(false);
-  const [paymentToDelete, setPaymentToDelete] = useState(null);
+  const {
+    data: allPayments,
+    loading,
+    error,
+    delete: deleteItem,
+  } = useAPI("/api/accounts/payment/");
   const [search, setSearch] = useState("");
   const [showCount, setShowCount] = useState(10);
+  const [showModal, setShowModal] = useState(false);
+  const [paymentToDelete, setPaymentToDelete] = useState(null);
 
-  useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(payments));
-  }, [payments]);
+  const payments =
+    allPayments?.filter((p) => p.payment_category === "CUSTOMER") || [];
 
-  // Filtering logic
   const filtered = payments.filter(
     (p) =>
       (p.customer || "").toLowerCase().includes(search.toLowerCase()) ||
-      (p.paymentType || "").toLowerCase().includes(search.toLowerCase()) ||
-      (p.bank || "").toLowerCase().includes(search.toLowerCase()) ||
-      (p.branch || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.bill || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.payment_type || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.payment_date || "").includes(search) ||
       (p.amount || "").toString().includes(search) ||
-      (p.status || "").toLowerCase().includes(search.toLowerCase())
+      (p.status || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleAdd = () => {
     navigate("/addcustomerpayment");
   };
-  const handleEdit = (payment) => {
-    navigate(`/editcustomerpayment/${payment.code}`);
+
+  const handleEdit = (item) => {
+    navigate(`/editcustomerpayment/${item.id}`);
   };
-  const handleDelete = (payment) => {
-    setPaymentToDelete(payment);
+
+  const handleDelete = (item) => {
+    setPaymentToDelete(item);
     setShowModal(true);
   };
-  const confirmDelete = () => {
-    if (paymentToDelete) {
-      const updated = payments.filter((p) => p.code !== paymentToDelete.code);
-      setPayments(updated);
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
-      setShowModal(false);
-      setPaymentToDelete(null);
+
+  const confirmDelete = async () => {
+    if (paymentToDelete && paymentToDelete.id !== undefined) {
+      try {
+        await deleteItem(paymentToDelete.id);
+        setShowModal(false);
+        setPaymentToDelete(null);
+      } catch (err) {
+        console.error("Delete failed:", err);
+      }
     }
   };
+
   const closeModal = () => {
     setShowModal(false);
     setPaymentToDelete(null);
@@ -58,13 +65,50 @@ export default function CustomerPayment() {
 
   const columns = [
     { field: "customer", header: "Customer", sortable: true },
-    { field: "paymentType", header: "Payment Type", sortable: true },
-    { field: "paymentDate", header: "Payment Date", sortable: true },
-    { field: "bank", header: "Bank", sortable: true },
-    { field: "branch", header: "Branch", sortable: true },
-    { field: "amount", header: "Amount", sortable: true },
+    { field: "bill", header: "Bill/Invoice" },
+    { field: "payment_type", header: "Payment Type" },
+    { field: "payment_date", header: "Payment Date", sortable: true },
+    { field: "amount", header: "Amount" },
     { field: "status", header: "Status", sortable: true },
   ];
+
+  const displayedData = filtered.slice(0, showCount);
+
+  if (loading) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-info">Loading customer payments...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-danger">
+              Error loading customer payments
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="d-flex flex-row justify-content-start vw-100">
@@ -76,33 +120,35 @@ export default function CustomerPayment() {
         <AppNavbar />
         <div style={{ marginTop: 50, padding: "2rem" }}>
           <DataHeader
-            title="Customer Payment List"
-            subtitle="Manage Your Customer Payment"
+            title="Customer Payments"
+            subtitle="Manage Your Customer Payments"
             onAdd={handleAdd}
             buttonText="Add New Customer Payment"
           />
           <DataControls
-            showCount={showCount}
-            setShowCount={setShowCount}
-            search={search}
-            setSearch={setSearch}
-            data={filtered}
-            columns={columns}
+            onAdd={handleAdd}
+            searchValue={search}
+            onSearchChange={setSearch}
+            showCountValue={showCount}
+            onShowCountChange={setShowCount}
+            totalCount={filtered.length}
           />
           <DataTable
-            data={filtered}
             columns={columns}
+            data={filtered}
             showCount={showCount}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
         </div>
-        {/* Delete Confirmation Modal */}
+      </div>
+
+      {showModal && (
         <div
-          className={`modal fade ${showModal ? "show" : ""}`}
-          style={{ display: showModal ? "block" : "none" }}
+          className="modal d-block"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
         >
-          <div className="modal-dialog">
+          <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Confirm Delete</h5>
@@ -113,7 +159,10 @@ export default function CustomerPayment() {
                 ></button>
               </div>
               <div className="modal-body">
-                Are you sure you want to delete this customer payment?
+                <p>
+                  Are you sure you want to delete this payment for{" "}
+                  <strong>{paymentToDelete?.customer}</strong>?
+                </p>
               </div>
               <div className="modal-footer">
                 <button
@@ -134,8 +183,7 @@ export default function CustomerPayment() {
             </div>
           </div>
         </div>
-        {showModal && <div className="modal-backdrop fade show"></div>}
-      </div>
+      )}
     </div>
   );
 }

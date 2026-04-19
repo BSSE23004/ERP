@@ -1,86 +1,95 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-const getAccountNatureOptions = () => {
-  const stored = localStorage.getItem("account_nature");
-  return stored ? JSON.parse(stored).map((n) => n.name) : [];
-};
-const getAccountGroupOptions = () => {
-  const stored = localStorage.getItem("account_groups");
-  return stored ? JSON.parse(stored).map((g) => g.name) : [];
-};
-const getParentAccountOptions = () => {
-  const stored = localStorage.getItem("chart_of_account");
-  return stored ? JSON.parse(stored).map((a) => a.name) : [];
-};
+import useAPI from "../../hooks/useAPI";
 
 export default function ChartOfAccountForm({ id }) {
   const navigate = useNavigate();
+  const {
+    data: allAccounts,
+    loading,
+    error: fetchError,
+    create,
+    update,
+  } = useAPI("/api/accounts/chartofaccount/");
+
+  const { data: accountNatures } = useAPI("/api/accounts/accountnature/");
+  const { data: accountGroups } = useAPI("/api/accounts/accountgroup/");
+  const { data: parentAccounts } = useAPI("/api/accounts/chartofaccount/");
+
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
-  const [parentAccount, setParentAccount] = useState("");
-  const [accountNature, setAccountNature] = useState("");
-  const [accountGroup, setAccountGroup] = useState("");
+  const [parentAccountId, setParentAccountId] = useState("");
+  const [accountNatureId, setAccountNatureId] = useState("");
+  const [accountGroupId, setAccountGroupId] = useState("");
   const [openingBalance, setOpeningBalance] = useState("");
   const [status, setStatus] = useState(true);
   const [error, setError] = useState("");
-  const LOCAL_KEY = "chart_of_account";
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const editingItem =
+    id && allAccounts
+      ? allAccounts.find((item) => item.id === parseInt(id))
+      : null;
 
   useEffect(() => {
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    if (id) {
-      const account = items.find((a) => a.code === id);
-      if (account) {
-        setCode(account.code || "");
-        setName(account.name || "");
-        setParentAccount(account.parentAccount || "");
-        setAccountNature(account.accountNature || "");
-        setAccountGroup(account.accountGroup || "");
-        setOpeningBalance(account.openingBalance || "");
-        setStatus(account.status === "Active");
-      }
+    if (editingItem) {
+      setCode(editingItem.code);
+      setName(editingItem.name);
+      setParentAccountId(editingItem.parent_account || "");
+      setAccountNatureId(editingItem.account_nature || "");
+      setAccountGroupId(editingItem.account_group || "");
+      setOpeningBalance(editingItem.opening_balance || "");
+      setStatus(editingItem.status === "Active");
     } else {
-      if (!items.length) {
-        setCode("COA-0001");
-      } else {
-        const last = items[items.length - 1]?.code;
-        if (last) {
-          const num = parseInt(last.split("-")[1]) + 1;
+      // Generate next code
+      if (allAccounts && allAccounts.length > 0) {
+        const lastCode = allAccounts[allAccounts.length - 1]?.code;
+        if (lastCode && lastCode.includes("-")) {
+          const num = parseInt(lastCode.split("-")[1], 10) + 1;
           setCode(`COA-${num.toString().padStart(4, "0")}`);
         } else {
           setCode("COA-0001");
         }
+      } else {
+        setCode("COA-0001");
       }
     }
-  }, [id]);
+  }, [id, allAccounts, editingItem]);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (!code || !name || !accountNature || !accountGroup) {
+    if (!code || !name || !accountNatureId || !accountGroupId) {
       setError("Please fill all required fields");
       return;
     }
-    const stored = localStorage.getItem(LOCAL_KEY);
-    const items = stored ? JSON.parse(stored) : [];
-    const newItem = {
-      code,
-      name,
-      parentAccount,
-      accountNature,
-      accountGroup,
-      openingBalance,
-      status: status ? "Active" : "Inactive",
-    };
-    let updatedItems;
-    if (id) {
-      updatedItems = items.map((a) => (a.code === id ? newItem : a));
-    } else {
-      updatedItems = [...items, newItem];
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        code,
+        name,
+        parent_account: parentAccountId || null,
+        account_nature: parseInt(accountNatureId),
+        account_group: parseInt(accountGroupId),
+        opening_balance: parseFloat(openingBalance) || 0,
+        status: status ? "Active" : "Inactive",
+      };
+
+      if (editingItem) {
+        await update(editingItem.id, payload);
+      } else {
+        await create(payload);
+      }
+      navigate("/chart-of-account");
+    } catch (err) {
+      setError(err.message || "Failed to save account");
+      console.error("Save error:", err);
+    } finally {
+      setIsSubmitting(false);
     }
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(updatedItems));
-    navigate("/chart-of-account");
   };
+  if (loading) {
+    return <div className="alert alert-info">Loading...</div>;
+  }
 
   return (
     <>
@@ -112,57 +121,61 @@ export default function ChartOfAccountForm({ id }) {
           </div>
           <div className="col-md-3">
             <label className="form-label fw-semibold">Parent Account</label>
-            <input
+            <select
               className="form-control"
-              list="parent-account-list"
-              value={parentAccount}
-              onChange={(e) => setParentAccount(e.target.value)}
-              placeholder="Select or type Parent Account"
-            />
-            <datalist id="parent-account-list">
-              {getParentAccountOptions().map((opt) => (
-                <option key={opt} value={opt} />
-              ))}
-            </datalist>
+              value={parentAccountId}
+              onChange={(e) => setParentAccountId(e.target.value)}
+            >
+              <option value="">-- Select Parent Account --</option>
+              {parentAccounts &&
+                parentAccounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.code} - {acc.name}
+                  </option>
+                ))}
+            </select>
           </div>
           <div className="col-md-3">
             <label className="form-label fw-semibold">Account Nature*</label>
-            <input
+            <select
               className="form-control"
-              list="account-nature-list"
-              value={accountNature}
-              onChange={(e) => setAccountNature(e.target.value)}
-              placeholder="Select or type Account Nature"
+              value={accountNatureId}
+              onChange={(e) => setAccountNatureId(e.target.value)}
               required
-            />
-            <datalist id="account-nature-list">
-              {getAccountNatureOptions().map((opt) => (
-                <option key={opt} value={opt} />
-              ))}
-            </datalist>
+            >
+              <option value="">-- Select Account Nature --</option>
+              {accountNatures &&
+                accountNatures.map((nature) => (
+                  <option key={nature.id} value={nature.id}>
+                    {nature.name}
+                  </option>
+                ))}
+            </select>
           </div>
         </div>
         <div className="row mb-3">
           <div className="col-md-3 mb-3 mb-md-0">
             <label className="form-label fw-semibold">Account Group*</label>
-            <input
+            <select
               className="form-control"
-              list="account-group-list"
-              value={accountGroup}
-              onChange={(e) => setAccountGroup(e.target.value)}
-              placeholder="Select or type Account Group"
+              value={accountGroupId}
+              onChange={(e) => setAccountGroupId(e.target.value)}
               required
-            />
-            <datalist id="account-group-list">
-              {getAccountGroupOptions().map((opt) => (
-                <option key={opt} value={opt} />
-              ))}
-            </datalist>
+            >
+              <option value="">-- Select Account Group --</option>
+              {accountGroups &&
+                accountGroups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name}
+                  </option>
+                ))}
+            </select>
           </div>
           <div className="col-md-3">
             <label className="form-label fw-semibold">Opening Balance</label>
             <input
               type="number"
+              step="0.01"
               className="form-control"
               value={openingBalance}
               onChange={(e) => setOpeningBalance(e.target.value)}
@@ -185,13 +198,15 @@ export default function ChartOfAccountForm({ id }) {
             type="submit"
             className="btn text-white px-4"
             style={{ backgroundColor: "#ff6600" }}
+            disabled={isSubmitting}
           >
-            Save
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             className="btn btn-dark px-4"
             onClick={() => navigate(-1)}
+            disabled={isSubmitting}
           >
             Back
           </button>
