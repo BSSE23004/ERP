@@ -85,6 +85,15 @@ const fieldMappingMap = {
     status: "status",
   },
   Narration: { narration: "narration", status: "status" },
+  "Customer Payment": {
+    customer: "customer",
+    paymentType: "payment_type",
+    paymentDate: "payment_date",
+    bank: "bank",
+    branch: "branch",
+    amount: "amount",
+    status: "status",
+  },
 };
 
 function Home() {
