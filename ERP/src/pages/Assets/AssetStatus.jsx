@@ -5,56 +5,55 @@ import DataHeader from "../../components/PagesTemplate/DataHeader";
 import DataControls from "../../components/PagesTemplate/DataControls";
 import DataTable from "../../components/PagesTemplate/DataTable";
 import { useNavigate } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 export default function AssetStatus() {
   const navigate = useNavigate();
-  const LOCAL_KEY = "asset_status";
-  const storedAssetStatus = localStorage.getItem(LOCAL_KEY);
-  const initialAssetStatus = storedAssetStatus
-    ? JSON.parse(storedAssetStatus)
-    : [];
-  const [assetStatus, setAssetStatus] = useState(initialAssetStatus);
-  const [showModal, setShowModal] = useState(false);
-  const [statusToDelete, setStatusToDelete] = useState(null);
+  const {
+    data: assetStatus,
+    loading,
+    error,
+    delete: deleteItem,
+  } = useAPI("/api/assets/assetstatus/");
   const [search, setSearch] = useState("");
   const [showCount, setShowCount] = useState(10);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(assetStatus));
-  }, [assetStatus]);
+  const [showModal, setShowModal] = useState(false);
+  const [statusToDelete, setStatusToDelete] = useState(null);
 
   const filtered = assetStatus.filter(
     (s) =>
       (s.code || "").toLowerCase().includes(search.toLowerCase()) ||
       (s.name || "").toLowerCase().includes(search.toLowerCase()) ||
       (s.description || "").toLowerCase().includes(search.toLowerCase()) ||
-      (s.status || "").toLowerCase().includes(search.toLowerCase())
+      (s.status || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleAdd = () => {
     navigate("/addassetstatus");
   };
   const handleEdit = (item) => {
-    if (!item.code) {
+    if (!item.id) {
       console.error(
-        "Asset status code is undefined. Cannot navigate to edit page."
+        "Asset status id is undefined. Cannot navigate to edit page.",
       );
       return;
     }
-    navigate(`/editassetstatus/${item.code}`);
+    navigate(`/editassetstatus/${item.id}`);
   };
   const handleDelete = (item) => {
     setStatusToDelete(item);
     setShowModal(true);
   };
-  const confirmDelete = () => {
-    if (statusToDelete && statusToDelete.code !== undefined) {
-      const updated = assetStatus.filter((s) => s.code !== statusToDelete.code);
-      setAssetStatus(updated);
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
+  const confirmDelete = async () => {
+    if (statusToDelete && statusToDelete.id !== undefined) {
+      try {
+        await deleteItem(statusToDelete.id);
+        setShowModal(false);
+        setStatusToDelete(null);
+      } catch (err) {
+        console.error("Delete failed:", err);
+      }
     }
-    setShowModal(false);
-    setStatusToDelete(null);
   };
   const closeModal = () => {
     setShowModal(false);
@@ -67,6 +66,40 @@ export default function AssetStatus() {
     { field: "description", header: "Description", sortable: true },
     { field: "status", header: "Status", sortable: true },
   ];
+
+  if (loading) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-info">Loading asset statuses...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-danger">Error: {error}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="d-flex flex-row justify-content-start vw-100">

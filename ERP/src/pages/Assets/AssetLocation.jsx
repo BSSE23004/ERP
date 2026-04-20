@@ -5,36 +5,28 @@ import DataHeader from "../../components/PagesTemplate/DataHeader";
 import DataControls from "../../components/PagesTemplate/DataControls";
 import DataTable from "../../components/PagesTemplate/DataTable";
 import { useNavigate } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 export default function AssetLocation() {
   const navigate = useNavigate();
-  const LOCAL_KEY = "asset_location";
-  const storedAssetLocation = localStorage.getItem(LOCAL_KEY);
-  const initialAssetLocation = storedAssetLocation
-    ? JSON.parse(storedAssetLocation)
-    : [];
-  const [assetLocation, setAssetLocation] = useState(initialAssetLocation);
-  const [showModal, setShowModal] = useState(false);
-  const [locationToDelete, setLocationToDelete] = useState(null);
+  const {
+    data: assetLocation,
+    loading,
+    error,
+    delete: deleteItem,
+  } = useAPI("/api/assets/assetlocation/");
   const [search, setSearch] = useState("");
   const [showCount, setShowCount] = useState(10);
+  const [showModal, setShowModal] = useState(false);
+  const [locationToDelete, setLocationToDelete] = useState(null);
 
-  useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(assetLocation));
-  }, [assetLocation]);
-
-  const filtered = assetLocation
-    .map((item, index) => ({
-      ...item,
-      id: item.code || `generated-id-${index}`, // Ensure each item has a unique id
-    }))
-    .filter(
-      (l) =>
-        (l.code || "").toLowerCase().includes(search.toLowerCase()) ||
-        (l.name || "").toLowerCase().includes(search.toLowerCase()) ||
-        (l.description || "").toLowerCase().includes(search.toLowerCase()) ||
-        (l.status || "").toLowerCase().includes(search.toLowerCase())
-    );
+  const filtered = assetLocation.filter(
+    (l) =>
+      (l.code || "").toLowerCase().includes(search.toLowerCase()) ||
+      (l.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (l.description || "").toLowerCase().includes(search.toLowerCase()) ||
+      (l.status || "").toLowerCase().includes(search.toLowerCase()),
+  );
 
   const handleAdd = () => {
     navigate("/addassetlocation");
@@ -42,7 +34,7 @@ export default function AssetLocation() {
   const handleEdit = (item) => {
     if (!item.id) {
       console.error(
-        "Asset location id is undefined. Cannot navigate to edit page."
+        "Asset location id is undefined. Cannot navigate to edit page.",
       );
       return;
     }
@@ -52,16 +44,16 @@ export default function AssetLocation() {
     setLocationToDelete(item);
     setShowModal(true);
   };
-  const confirmDelete = () => {
-    if (locationToDelete && locationToDelete.code !== undefined) {
-      const updated = assetLocation.filter(
-        (l) => l.code !== locationToDelete.code
-      );
-      setAssetLocation(updated);
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
+  const confirmDelete = async () => {
+    if (locationToDelete && locationToDelete.id !== undefined) {
+      try {
+        await deleteItem(locationToDelete.id);
+        setShowModal(false);
+        setLocationToDelete(null);
+      } catch (err) {
+        console.error("Delete failed:", err);
+      }
     }
-    setShowModal(false);
-    setLocationToDelete(null);
   };
   const closeModal = () => {
     setShowModal(false);
@@ -74,6 +66,40 @@ export default function AssetLocation() {
     { field: "description", header: "Description", sortable: true },
     { field: "status", header: "Status", sortable: true },
   ];
+
+  if (loading) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-info">Loading asset locations...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-danger">Error: {error}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="d-flex flex-row justify-content-start vw-100">

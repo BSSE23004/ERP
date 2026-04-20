@@ -5,59 +5,56 @@ import DataHeader from "../../components/PagesTemplate/DataHeader";
 import DataControls from "../../components/PagesTemplate/DataControls";
 import DataTable from "../../components/PagesTemplate/DataTable";
 import { useNavigate } from "react-router-dom";
+import useAPI from "../../hooks/useAPI";
 
 export default function AssetType() {
   const navigate = useNavigate();
-  const LOCAL_KEY = "asset_types";
-  const storedAssetTypes = localStorage.getItem(LOCAL_KEY);
-  const initialAssetTypes = storedAssetTypes
-    ? JSON.parse(storedAssetTypes)
-    : [];
-  const [assetTypes, setAssetTypes] = useState(initialAssetTypes);
-  const [showModal, setShowModal] = useState(false);
-  const [assetTypeToDelete, setAssetTypeToDelete] = useState(null);
+  const {
+    data: assetTypes,
+    loading,
+    error,
+    delete: deleteItem,
+  } = useAPI("/api/assets/assettype/");
   const [search, setSearch] = useState("");
   const [showCount, setShowCount] = useState(10);
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(assetTypes));
-  }, [assetTypes]);
+  const [showModal, setShowModal] = useState(false);
+  const [assetTypeToDelete, setAssetTypeToDelete] = useState(null);
 
   // Filtering logic
   const filtered = assetTypes.filter(
     (a) =>
       (a.code || "").toLowerCase().includes(search.toLowerCase()) ||
-      (a.typeName || "").toLowerCase().includes(search.toLowerCase()) ||
+      (a.type_name || "").toLowerCase().includes(search.toLowerCase()) ||
       (a.description || "").toLowerCase().includes(search.toLowerCase()) ||
-      (a.status || "").toLowerCase().includes(search.toLowerCase())
+      (a.status || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleAdd = () => {
     navigate("/addassettype");
   };
   const handleEdit = (item) => {
-    if (!item.code) {
+    if (!item.id) {
       console.error(
-        "Asset type code is undefined. Cannot navigate to edit page."
+        "Asset type id is undefined. Cannot navigate to edit page.",
       );
       return;
     }
-    navigate(`/editassettype/${item.code}`);
+    navigate(`/editassettype/${item.id}`);
   };
   const handleDelete = (item) => {
     setAssetTypeToDelete(item);
     setShowModal(true);
   };
-  const confirmDelete = () => {
-    if (assetTypeToDelete && assetTypeToDelete.code !== undefined) {
-      const updated = assetTypes.filter(
-        (a) => a.code !== assetTypeToDelete.code
-      );
-      setAssetTypes(updated);
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
+  const confirmDelete = async () => {
+    if (assetTypeToDelete && assetTypeToDelete.id !== undefined) {
+      try {
+        await deleteItem(assetTypeToDelete.id);
+        setShowModal(false);
+        setAssetTypeToDelete(null);
+      } catch (err) {
+        console.error("Delete failed:", err);
+      }
     }
-    setShowModal(false);
-    setAssetTypeToDelete(null);
   };
   const closeModal = () => {
     setShowModal(false);
@@ -66,10 +63,44 @@ export default function AssetType() {
 
   const columns = [
     { field: "code", header: "Code", sortable: true },
-    { field: "typeName", header: "Type Name", sortable: true },
+    { field: "type_name", header: "Type Name", sortable: true },
     { field: "description", header: "Description", sortable: true },
     { field: "status", header: "Status", sortable: true },
   ];
+
+  if (loading) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-info">Loading asset types...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="d-flex flex-row justify-content-start vw-100">
+        <Sidebar />
+        <div
+          className="flex-fill d-flex flex-column width-100"
+          style={{ minHeight: "100vh", background: "#fafbfc", marginLeft: 260 }}
+        >
+          <AppNavbar />
+          <div style={{ marginTop: 50, padding: "2rem" }}>
+            <div className="alert alert-danger">Error: {error}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="d-flex flex-row justify-content-start vw-100">

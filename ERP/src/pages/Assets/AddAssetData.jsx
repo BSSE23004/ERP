@@ -31,7 +31,7 @@ export default function AddAssetData() {
     formComponent = <AssetTypeForm id={id} />;
   } else if (isAssetStatus || isAssetLocation) {
     formComponent = (
-      <AssetStatusForm code={id} isAssetLocation={isAssetLocation} />
+      <AssetStatusForm id={id} isAssetLocation={isAssetLocation} />
     );
   } else if (isAssetSubType) {
     formComponent = <AssetSubTypeForm id={id} />;
