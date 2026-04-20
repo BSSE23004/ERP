@@ -7,13 +7,136 @@ import LivePreviewCard from "../components/HomePage/LivePreviewCard";
 import DataTable from "../components/PagesTemplate/DataTable";
 import dashboardCardsData from "../utils/dashboardCards.json";
 import previewConfig from "../utils/previewConfig.json";
+import api from "../services/api";
+
+// Mapping of preview config keys to API endpoints
+const apiEndpointMap = {
+  // Academics
+  "Academic Subject": "/api/academics/subjects/",
+  "Program Type": "/api/academics/program-types/",
+  "Academic Program": "/api/academics/programs/",
+  Class: "/api/academics/classes/",
+  Section: "/api/academics/sections/",
+  // Assets
+  "Asset Type": "/api/assets/assettype/",
+  "Asset Sub Type": "/api/assets/assetsubtype/",
+  "Asset Status": "/api/assets/assetstatus/",
+  "Asset Location": "/api/assets/assetlocation/",
+  // Accounts
+  "Account Group": "/api/accounts/accountgroup/",
+  "Account Nature": "/api/accounts/accountnature/",
+  "Voucher Type": "/api/accounts/vouchertype/",
+  "Chart of Account": "/api/accounts/chartofaccount/",
+  "Journal Voucher": "/api/accounts/journalvoucher/",
+  "Ledger Entries": "/api/accounts/ledgerentry/",
+  Narration: "/api/accounts/narration/",
+};
+
+// Field mapping for API responses
+const fieldMappingMap = {
+  // Academics
+  "Program Type": { name: "name", code: "code" },
+  "Academic Program": {
+    name: "name",
+    code: "code",
+    programType: "program_type",
+    status: "status",
+  },
+  "Academic Subject": { name: "name", code: "code" },
+  Class: { name: "name", code: "code" },
+  Section: { name: "name", code: "code" },
+  // Assets
+  "Asset Type": { typeName: "type_name", code: "code" },
+  "Asset Sub Type": {
+    code: "code",
+    assetTypeName: "asset_type_name",
+    subTypeName: "sub_type_name",
+  },
+  "Asset Status": { code: "code", name: "name" },
+  "Asset Location": { code: "code", name: "name" },
+  // Accounts
+  "Account Group": {
+    name: "name",
+    description: "description",
+    status: "status",
+  },
+  "Account Nature": { code: "code", name: "name", status: "status" },
+  "Voucher Type": { code: "code", name: "name", status: "status" },
+  "Chart of Account": {
+    code: "code",
+    name: "name",
+    parentAccount: "parent_account",
+    accountNature: "account_nature",
+    accountGroup: "account_group",
+    openingBalance: "opening_balance",
+    status: "status",
+  },
+  "Journal Voucher": {
+    bookingDate: "booking_date",
+    voucherNo: "voucher_no",
+    documentNo: "document_no",
+    status: "status",
+  },
+  "Ledger Entries": {
+    documentNo: "document_no",
+    bookingDate: "booking_date",
+    totalDebit: "total_debit",
+    totalCredit: "total_credit",
+    status: "status",
+  },
+  Narration: { narration: "narration", status: "status" },
+};
 
 function Home() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [previewData, setPreviewData] = useState({});
+  const [loadingStates, setLoadingStates] = useState({});
+  const [errorStates, setErrorStates] = useState({});
 
   const handleSearch = (val) => {
     setSearchTerm(val.trim().toLowerCase());
   };
+
+  // Fetch data from API for each preview card
+  useEffect(() => {
+    dashboardCardsData.forEach((card) => {
+      const endpoint = apiEndpointMap[card.label];
+      if (endpoint) {
+        setLoadingStates((prev) => ({ ...prev, [card.label]: true }));
+        api
+          .get(endpoint)
+          .then((response) => {
+            const rawData = Array.isArray(response.data) ? response.data : [];
+            // Transform field names based on the mapping
+            const fieldMapping = fieldMappingMap[card.label] || {};
+            const transformedData = rawData.map((item) => {
+              const transformed = { ...item };
+              Object.keys(fieldMapping).forEach((displayField) => {
+                const apiField = fieldMapping[displayField];
+                if (apiField in item) {
+                  transformed[displayField] = item[apiField];
+                }
+              });
+              return transformed;
+            });
+            setPreviewData((prev) => ({
+              ...prev,
+              [card.label]: transformedData,
+            }));
+            setLoadingStates((prev) => ({ ...prev, [card.label]: false }));
+            setErrorStates((prev) => ({ ...prev, [card.label]: null }));
+          })
+          .catch((err) => {
+            setLoadingStates((prev) => ({ ...prev, [card.label]: false }));
+            setErrorStates((prev) => ({
+              ...prev,
+              [card.label]: err.message || "Failed to load data",
+            }));
+            console.error(`Error fetching ${card.label}:`, err);
+          });
+      }
+    });
+  }, []);
 
   return (
     <div className="d-flex flex-row justify-content-start vw-100 ">
@@ -37,17 +160,13 @@ function Home() {
         >
           {dashboardCardsData.map((card) => {
             const preview = previewConfig[card.label];
-            let data = [];
-            if (preview) {
-              try {
-                data = JSON.parse(localStorage.getItem(preview.key)) || [];
-              } catch {
-                data = [];
-              }
-            }
+            let data = previewData[card.label] || [];
+            let loading = loadingStates[card.label] || false;
+            let error = errorStates[card.label] || null;
+
             let filteredData = data;
             // If searchTerm is empty, show all data for all cards
-            if (searchTerm && preview) {
+            if (searchTerm && preview && data.length > 0) {
               filteredData = data.filter((row) =>
                 preview.columns.some((col) => {
                   const val = row[col.field];
@@ -57,9 +176,10 @@ function Home() {
                     (typeof val === "number" &&
                       val.toString().includes(searchTerm))
                   );
-                })
+                }),
               );
             }
+
             return (
               <LivePreviewCard
                 key={card.label}
@@ -67,15 +187,101 @@ function Home() {
                 color={card.color}
                 style={{ minWidth: 420, maxWidth: 520, flex: "1 1 420px" }}
               >
-                {preview ? (
-                  <DataTable
-                    data={filteredData}
-                    columns={preview.columns}
-                    showCount={5}
-                    onEdit={() => {}}
-                    onDelete={() => {}}
-                    readOnly={true}
-                  />
+                {loading ? (
+                  <div
+                    style={{
+                      minHeight: 180,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <div style={{ fontSize: 16, color: "#888" }}>
+                      Loading <b>{card.label}</b>...
+                    </div>
+                  </div>
+                ) : error ? (
+                  <div
+                    style={{
+                      minHeight: 180,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 16,
+                        color: "#d32f2f",
+                        marginBottom: 12,
+                      }}
+                    >
+                      Error loading <b>{card.label}</b>
+                    </div>
+                    <Link
+                      to={card.path}
+                      style={{
+                        background: card.color,
+                        color: "#211d5a",
+                        fontWeight: 600,
+                        borderRadius: 8,
+                        padding: "8px 22px",
+                        textDecoration: "none",
+                        fontSize: 16,
+                        boxShadow: "0 1px 6px #211d5a11",
+                      }}
+                    >
+                      Go to {card.label}
+                    </Link>
+                  </div>
+                ) : preview ? (
+                  data && data.length > 0 ? (
+                    <DataTable
+                      data={filteredData}
+                      columns={preview.columns}
+                      showCount={5}
+                      onEdit={() => {}}
+                      onDelete={() => {}}
+                      readOnly={true}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        minHeight: 180,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 16,
+                          color: "#888",
+                          marginBottom: 12,
+                        }}
+                      >
+                        No data available for <b>{card.label}</b>
+                      </div>
+                      <Link
+                        to={card.path}
+                        style={{
+                          background: card.color,
+                          color: "#211d5a",
+                          fontWeight: 600,
+                          borderRadius: 8,
+                          padding: "8px 22px",
+                          textDecoration: "none",
+                          fontSize: 16,
+                          boxShadow: "0 1px 6px #211d5a11",
+                        }}
+                      >
+                        Go to {card.label}
+                      </Link>
+                    </div>
+                  )
                 ) : (
                   <div
                     style={{

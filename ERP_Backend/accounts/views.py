@@ -808,3 +808,245 @@ def payment_detail(request, pk):
                 {'error': f'Failed to delete payment: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+# ==================== FILTERED CASH/BANK VOUCHER ENDPOINTS ====================
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def cash_payment_voucher_list(request):
+    """
+    GET: Retrieve all cash payment vouchers
+    POST: Create a new cash payment voucher
+    """
+    if request.method == 'GET':
+        try:
+            vouchers = CashBankVoucher.objects.filter(voucher_type='CASH_PAYMENT')
+            serializer = CashBankVoucherSerializer(vouchers, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch cash payment vouchers: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    elif request.method == 'POST':
+        data = request.data.copy()
+        data['voucher_type'] = 'CASH_PAYMENT'
+        try:
+            serializer = CashBankVoucherSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create cash payment voucher: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def cash_receipt_voucher_list(request):
+    """
+    GET: Retrieve all cash receipt vouchers
+    POST: Create a new cash receipt voucher
+    """
+    if request.method == 'GET':
+        try:
+            vouchers = CashBankVoucher.objects.filter(voucher_type='CASH_RECEIPT')
+            serializer = CashBankVoucherSerializer(vouchers, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch cash receipt vouchers: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    elif request.method == 'POST':
+        data = request.data.copy()
+        data['voucher_type'] = 'CASH_RECEIPT'
+        try:
+            serializer = CashBankVoucherSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create cash receipt voucher: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def bank_payment_voucher_list(request):
+    """
+    GET: Retrieve all bank payment vouchers
+    POST: Create a new bank payment voucher
+    """
+    if request.method == 'GET':
+        try:
+            vouchers = CashBankVoucher.objects.filter(voucher_type='BANK_PAYMENT')
+            serializer = CashBankVoucherSerializer(vouchers, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch bank payment vouchers: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    elif request.method == 'POST':
+        data = request.data.copy()
+        data['voucher_type'] = 'BANK_PAYMENT'
+        try:
+            serializer = CashBankVoucherSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create bank payment voucher: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def bank_receipt_voucher_list(request):
+    """
+    GET: Retrieve all bank receipt vouchers
+    POST: Create a new bank receipt voucher
+    """
+    if request.method == 'GET':
+        try:
+            vouchers = CashBankVoucher.objects.filter(voucher_type='BANK_RECEIPT')
+            serializer = CashBankVoucherSerializer(vouchers, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch bank receipt vouchers: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    elif request.method == 'POST':
+        data = request.data.copy()
+        data['voucher_type'] = 'BANK_RECEIPT'
+        try:
+            serializer = CashBankVoucherSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create bank receipt voucher: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# ==================== FILTERED PAYMENT ENDPOINTS ====================
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def employee_payment_list(request):
+    """
+    GET: Retrieve all employee payments
+    POST: Create a new employee payment
+    """
+    if request.method == 'GET':
+        try:
+            payments = Payment.objects.filter(payment_category='EMPLOYEE')
+            serializer = PaymentSerializer(payments, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch employee payments: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    elif request.method == 'POST':
+        data = request.data.copy()
+        data['payment_category'] = 'EMPLOYEE'
+        try:
+            serializer = PaymentSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create employee payment: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def customer_payment_list(request):
+    """
+    GET: Retrieve all customer payments
+    POST: Create a new customer payment
+    """
+    if request.method == 'GET':
+        try:
+            payments = Payment.objects.filter(payment_category='CUSTOMER')
+            serializer = PaymentSerializer(payments, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch customer payments: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    elif request.method == 'POST':
+        data = request.data.copy()
+        data['payment_category'] = 'CUSTOMER'
+        try:
+            serializer = PaymentSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create customer payment: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def vendor_payment_list(request):
+    """
+    GET: Retrieve all vendor payments
+    POST: Create a new vendor payment
+    """
+    if request.method == 'GET':
+        try:
+            payments = Payment.objects.filter(payment_category='VENDOR')
+            serializer = PaymentSerializer(payments, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to fetch vendor payments: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    elif request.method == 'POST':
+        data = request.data.copy()
+        data['payment_category'] = 'VENDOR'
+        try:
+            serializer = PaymentSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(
+                {'error': f'Failed to create vendor payment: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
