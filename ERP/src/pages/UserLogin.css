@@ -6,6 +6,22 @@
     background-color: #010242;
 }
 
+.form-container {
+    position: relative;
+    overflow: hidden;
+}
+
 .algo-text {
     color: #ff6600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .login-container {
+        width: 90vw;
+    }
+
+    .left-panel {
+        min-height: 200px;
+    }
 }

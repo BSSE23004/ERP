@@ -5,7 +5,7 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-const Login = () => {
+const Login = ({ onSwitchToSignup }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -117,20 +117,25 @@ const Login = () => {
         </div>
       </form>
 
-      {/* Test credentials info */}
-      <div
-        className="mt-4 p-3 bg-light"
-        style={{ borderRadius: "5px", maxWidth: 400, fontSize: "12px" }}
-      >
-        <p className="mb-2 text-muted">
-          <strong>Test Credentials:</strong>
-        </p>
-        <p className="mb-1">
-          <strong>Admin:</strong> admin / admin123
-        </p>
-        <p>
-          <strong>Demo:</strong> demo / demo123
-        </p>
+      {/* Signup Link */}
+      <div className="mt-4 text-center">
+        <span className="text-muted">Do not have any account? </span>
+        <button
+          type="button"
+          onClick={onSwitchToSignup}
+          className="btn-link-custom"
+          style={{
+            background: "none",
+            border: "none",
+            color: "#ff6600",
+            cursor: "pointer",
+            textDecoration: "underline",
+            fontSize: "1rem",
+            padding: 0,
+          }}
+        >
+          Sign Up
+        </button>
       </div>
     </div>
   );
