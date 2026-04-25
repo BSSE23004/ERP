@@ -642,12 +642,17 @@ def narration_detail(request, pk):
 @permission_classes([IsAuthenticated])
 def cash_bank_voucher_list(request):
     """
-    GET: Retrieve all cash/bank vouchers
+    GET: Retrieve all cash/bank vouchers or filter by voucher_type
     POST: Create a new cash/bank voucher
+    Query parameters: voucher_type (CASH_PAYMENT, CASH_RECEIPT, BANK_PAYMENT, BANK_RECEIPT)
     """
     if request.method == 'GET':
         try:
             vouchers = CashBankVoucher.objects.all()
+            # Filter by voucher_type if provided
+            voucher_type = request.query_params.get('voucher_type')
+            if voucher_type:
+                vouchers = vouchers.filter(voucher_type=voucher_type)
             serializer = CashBankVoucherSerializer(vouchers, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -729,12 +734,17 @@ def cash_bank_voucher_detail(request, pk):
 @permission_classes([IsAuthenticated])
 def payment_list(request):
     """
-    GET: Retrieve all payments
+    GET: Retrieve all payments or filter by payment_category
     POST: Create a new payment
+    Query parameters: payment_category (VENDOR, CUSTOMER, EMPLOYEE)
     """
     if request.method == 'GET':
         try:
             payments = Payment.objects.all()
+            # Filter by payment_category if provided
+            payment_category = request.query_params.get('payment_category')
+            if payment_category:
+                payments = payments.filter(payment_category=payment_category)
             serializer = PaymentSerializer(payments, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:

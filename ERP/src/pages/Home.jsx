@@ -30,6 +30,19 @@ const apiEndpointMap = {
   "Journal Voucher": "/api/accounts/journalvoucher/",
   "Ledger Entries": "/api/accounts/ledgerentry/",
   Narration: "/api/accounts/narration/",
+  // Vouchers - Cash/Bank
+  "Cash Receipt Voucher":
+    "/api/accounts/cashbankvoucher/?voucher_type=CASH_RECEIPT",
+  "Cash Payment Voucher":
+    "/api/accounts/cashbankvoucher/?voucher_type=CASH_PAYMENT",
+  "Bank Receipt Voucher":
+    "/api/accounts/cashbankvoucher/?voucher_type=BANK_RECEIPT",
+  "Bank Payment Voucher":
+    "/api/accounts/cashbankvoucher/?voucher_type=BANK_PAYMENT",
+  // Payments - by category
+  "Employee Payment": "/api/accounts/payment/?payment_category=EMPLOYEE",
+  "Customer Payment": "/api/accounts/payment/?payment_category=CUSTOMER",
+  "Vendor Payment": "/api/accounts/payment/?payment_category=VENDOR",
 };
 
 // Field mapping for API responses
@@ -85,8 +98,58 @@ const fieldMappingMap = {
     status: "status",
   },
   Narration: { narration: "narration", status: "status" },
+  // Vouchers - Cash/Bank
+  "Cash Receipt Voucher": {
+    bookingDate: "booking_date",
+    voucherNo: "voucher_no",
+    documentNo: "document_no",
+    totalAmount: "total_amount",
+    status: "status",
+  },
+  "Cash Payment Voucher": {
+    bookingDate: "booking_date",
+    voucherNo: "voucher_no",
+    documentNo: "document_no",
+    totalAmount: "total_amount",
+    status: "status",
+  },
+  "Bank Receipt Voucher": {
+    bookingDate: "booking_date",
+    voucherNo: "voucher_no",
+    documentNo: "document_no",
+    bank: "bank",
+    branch: "branch",
+    totalAmount: "total_amount",
+    status: "status",
+  },
+  "Bank Payment Voucher": {
+    bookingDate: "booking_date",
+    voucherNo: "voucher_no",
+    documentNo: "document_no",
+    bank: "bank",
+    branch: "branch",
+    totalAmount: "total_amount",
+    status: "status",
+  },
+  // Payments
+  "Employee Payment": {
+    employee: "employee",
+    paymentType: "payment_type",
+    paymentDate: "payment_date",
+    amount: "amount",
+    status: "status",
+  },
   "Customer Payment": {
     customer: "customer",
+    paymentType: "payment_type",
+    paymentDate: "payment_date",
+    bank: "bank",
+    branch: "branch",
+    amount: "amount",
+    status: "status",
+  },
+  "Vendor Payment": {
+    vendor: "vendor",
     paymentType: "payment_type",
     paymentDate: "payment_date",
     bank: "bank",
