@@ -33,12 +33,17 @@ DB_PORT = os.getenv('DB_PORT', '5432')
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-$-ydkjs(kd!##@i_jl@6_u%ejs5#m(l25so^@*c_u=djt#(c$='
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-fallback-development-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'erp-rouge-ten.vercel.app',
+    os.getenv('RAILWAY_DOMAIN', ''),
+]
 
 
 # Application definition
@@ -156,6 +161,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5175",
     "http://localhost:3000",      # Alternative React dev server
     "http://127.0.0.1:3000",
+    "https://erp-rouge-ten.vercel.app",  # Production frontend
 ]
 CORS_ALLOW_CREDENTIALS = True      # Essential for session authentication
 CORS_ALLOW_HEADERS = [
@@ -185,7 +191,7 @@ REST_FRAMEWORK = {
 # Session Configuration
 SESSION_COOKIE_AGE = 3600  # 1 hour
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False  # True in production with HTTPS
+SESSION_COOKIE_SECURE = not DEBUG  # True in production, False in development
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SECURE = False  # True in production with HTTPS
+CSRF_COOKIE_SECURE = not DEBUG  # True in production, False in development
