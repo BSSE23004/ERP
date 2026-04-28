@@ -169,7 +169,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5175",
     "http://localhost:3000",      # Alternative React dev server
     "http://127.0.0.1:3000",
-    "https://erp-rouge-ten.vercel.app",  # Production frontend
+    "https://erp-rouge-ten.vercel.app",  # Production frontend (old)
+    "https://erp-hwh8s1mn8-ibrahim-sattars-projects.vercel.app",  # Production frontend (new)
 ]
 CORS_ALLOW_CREDENTIALS = True      # Essential for session authentication
 CORS_ALLOW_HEADERS = [
