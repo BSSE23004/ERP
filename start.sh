@@ -3,8 +3,8 @@ set -e
 
 echo "Starting Django application..."
 
-# Change to the Django project directory
-cd ERP_Backend
+# Railway deploys everything to /app, navigate to the backend directory
+cd /app/ERP_Backend
 
 # Run migrations
 echo "Running Django migrations..."
